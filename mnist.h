@@ -52,5 +52,5 @@ struct mnist_label_pack{
     unsigned char *pixel[0];          // unsigned byte   ??               label 
 };
 
-int loadImg(const char* filename,struct binaryImg *loadImg);
-int loadMnistImg(const char* filename,struct mnist_pixel_pack *mpp);
+struct binaryImg *loadImg(const char* filename);
+struct mnist_pixel_pack* loadMnistImg(const char* filename);

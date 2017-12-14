@@ -11,22 +11,7 @@
 #include <sys/stat.h>  
 #include <memory.h>
 
-int loadImg(const char* filename,struct binaryImg *pbimg)
-{
-    FILE *fp = fopen(filename, "rb");
-    if (NULL == fp){
-        printf("load file:%s faile\n",filename);
-        return 0;
-    }
-    struct stat st;  
-    stat(filename, &st);  
-    int fileSize =  st.st_size;  
-    pbimg = (struct binaryImg*)malloc(sizeof(struct binaryImg) + fileSize);
-    fclose(fp);
-    return fileSize;
-}
-
-int loadMnistImg(const char* filename,struct mnist_pixel_pack *mpp)
+struct binaryImg *loadImg(const char* filename)
 {
     FILE *fp = fopen(filename, "rb");
     if (NULL == fp){
@@ -36,17 +21,28 @@ int loadMnistImg(const char* filename,struct mnist_pixel_pack *mpp)
     struct stat st; 
     stat(filename, &st); 
     int fileSize =  st.st_size; 
-    unsigned char *pbuf = (unsigned char*)malloc(fileSize);
-    memset(pbuf,0x0,fileSize);
-    fread(pbuf,fileSize,1,fp);
+    struct binaryImg* pbimg = (struct binaryImg*)malloc(sizeof(struct binaryImg) + fileSize);
+    fclose(fp);
+    return pbimg;
+}
+
+struct mnist_pixel_pack* loadMnistImg(const char* filename)
+{
+    FILE *fp = fopen(filename, "rb");
+    if (NULL == fp){
+        printf("load file:%s faile\n",filename);
+        return NULL;
+    }
+    struct stat st;
+    stat(filename, &st);
+    int fileSize =  st.st_size;
+    struct mnist_pixel_pack *pmnistpp = (struct mnist_pixel_pack *)malloc(fileSize);
+    memset(pmnistpp,0x0,fileSize);
+    fread(pmnistpp,fileSize,1,fp);
     fclose(fp);
     printf("file size = %d\n",fileSize);
-    printf("buff: %ld\n",&mpp);
-    *mpp = (struct mnist_pixel_pack*)pbuf;
-    printf("buff: %ld\n",&mpp);
-    /*free(pbimg);*/
-    /*return &pbimg;*/
-    return fileSize;
+    free(pmnistpp);
+    return pmnistpp;
 }
 
 

@@ -16,9 +16,7 @@
 int main(int argc,char **argv)
 {
     printf("test\n");
-    struct mnist_pixel_pack  mpp;
-    printf("add: %ld\n",&mpp);
-    loadMnistImg(train_img_idx,&mpp);
-    printf("add: %ld\n",&mpp);
+    struct mnist_pixel_pack  *mpp;
+    mpp = loadMnistImg(train_img_idx);
     return 0;
 }

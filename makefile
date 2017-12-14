@@ -1,5 +1,5 @@
 GCC = gcc -std=c99 -g -Wall
-CFLAGS = -I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include 
+#CFLAGS = -I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include 
 #CFLAGS += `pkg-config --cflags opencv`
 #CLIBS += -lglib-2.0 -lpthread `pkg-config --libs opencv`   
 

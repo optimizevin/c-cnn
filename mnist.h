@@ -38,12 +38,16 @@ struct mnistImg{
 	float  bImg[0];
 };
 
+struct  mnist_data{
+    unsigned char mnist[28][28];
+};
+
 struct mnist_pixel_pack{
-    unsigned long  long msb;          // 32 bit integer  0x00000803(2051) magic number 
-    unsigned long  long num;          // 32 bit integer  60000            number of images 
-    unsigned long  long num_rows;     // 32 bit integer  28               number of rows 
-    unsigned long  long num_cols;     // 32 bit integer  28               number of columns 
-    unsigned char *pixel[0];          // pixel
+    int  msb;          // 32 bit integer  0x00000803(2051) magic number 
+    int  num;          // 32 bit integer  60000            number of images 
+    int  num_rows;     // 32 bit integer  28               number of rows 
+    int  num_cols;     // 32 bit integer  28               number of columns 
+    struct mnist_data *pixel[0];       // pixel
 };
 
 struct mnist_label_pack{

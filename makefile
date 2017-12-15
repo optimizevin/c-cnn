@@ -1,6 +1,6 @@
-GCC = gcc -std=c99 -g -Wall
+GCC = gcc -g -std=c99  -Wall
 #CFLAGS = -I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include 
-#CFLAGS += `pkg-config --cflags opencv`
+CFLAGS += -g
 #CLIBS += -lglib-2.0 -lpthread `pkg-config --libs opencv`   
 
 tobj =  t.o  mnist.o

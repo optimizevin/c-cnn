@@ -7,10 +7,10 @@
 *   Description : cnn
 */
 
-//0000     32 bit integer  0x00000803(2051) magic number 
-//0004     32 bit integer  60000            number of images 
-//0008     32 bit integer  28               number of rows 
-//0012     32 bit integer  28               number of columns 
+//0000     32 bit integer  0x00000803(2051) magic number
+//0004     32 bit integer  60000            number of images
+//0008     32 bit integer  28               number of rows
+//0012     32 bit integer  28               number of columns
 //
 #include "stdio.h"
 #include "stdlib.h"
@@ -20,41 +20,44 @@
 #define  train_img_idx      "./mnistdb/train-images.idx3-ubyte"
 #define  train_label_idx    "./mnistdb/train-labels.idx1-ubyte"
 
-struct binaryImg{
-	unsigned int hight;
-	unsigned int width;
-	unsigned int bImg[0];
+struct binaryImg {
+    unsigned int hight;
+    unsigned int width;
+    unsigned int bImg[0];
 };
 
-struct binaryImg_float{
-	unsigned int hight;
-	unsigned int width;
-	float  bImg[0];
+struct binaryImg_float {
+    unsigned int hight;
+    unsigned int width;
+    float  bImg[0];
 };
 
-struct mnistImg{
-	int hight;
-	int width;
-	float  bImg[0];
+struct mnistImg {
+    int hight;
+    int width;
+    float  bImg[0];
 };
 
-struct  mnist_data{
-    unsigned char mnist[28][28];
+struct  mnist_data {
+    int data[28][28];
 };
 
-struct mnist_pixel_pack{
-    int  msb;          // 32 bit integer  0x00000803(2051) magic number 
-    int  num;          // 32 bit integer  60000            number of images 
-    int  num_rows;     // 32 bit integer  28               number of rows 
-    int  num_cols;     // 32 bit integer  28               number of columns 
-    struct mnist_data *pixel[0];       // pixel
+
+struct mnist_pixel_file {
+    int  msb;                         // 32 bit integer  0x00000803(2051) magic number
+    int  num;                         // 32 bit integer  60000            number of images
+    int  num_rows;                    // 32 bit integer  28               number of rows
+    int  num_cols;                    // 32 bit integer  28               number of columns
+    unsigned char  pixel[0];          // pixel
 };
 
-struct mnist_label_pack{
-    unsigned long  long msb;          // 32 bit integer  0x00000801(2049) magic number (MSB first) 
-    unsigned long  long num;          // 32 bit integer  60000            number of items 
-    unsigned char *pixel[0];          // unsigned byte   ??               label 
+
+struct mnist_label_file {
+    int msb;                          // 32 bit integer  0x00000801(2049) magic number (MSB first)
+    int num;                          // 32 bit integer  60000            number of items
+    unsigned char pixel[0];          // unsigned byte   ??               label
 };
 
 struct binaryImg *loadImg(const char* filename);
-struct mnist_pixel_pack* loadMnistImg(const char* filename);
+long long loadMnistImg(const char* filename,int **p);
+long long loadMnistLabel(const char *filename,int **p);

@@ -37,31 +37,65 @@ struct binaryImg *loadImg(const char* filename)
     return pbimg;
 }
 
-struct mnist_pixel_pack* loadMnistImg(const char* filename)
+long long loadMnistImg(const char* filename,int **p)
 {
     FILE *fp = fopen(filename, "rb");
     if (NULL == fp){
         printf("load file:%s faile\n",filename);
-        return NULL;
+        return 0;
     }
     struct stat st;
     stat(filename, &st);
     int fileSize =  st.st_size;
-    struct mnist_pixel_pack *pmnistpp = (struct mnist_pixel_pack *)malloc(fileSize);
-    memset(pmnistpp,0x0,fileSize);
-    fread(pmnistpp,fileSize,1,fp);
+    struct mnist_pixel_file *pmnistpf = (struct mnist_pixel_file *)malloc(fileSize);
+    memset(pmnistpf,0x0,fileSize);
+    fread(pmnistpf,fileSize,1,fp);
     fclose(fp);
-    printf("file size = %d\n",fileSize);
 
-    printf("msb size = %d\n",sizeof(pmnistpp->msb));
-    pmnistpp->num =  reverseInt(pmnistpp->num);
-    printf("num = %d\n",pmnistpp->num);
+    pmnistpf->num =  reverseInt(pmnistpf->num);
+    pmnistpf->num_rows =  reverseInt(pmnistpf->num_rows);
+    pmnistpf->num_cols =  reverseInt(pmnistpf->num_cols);
 
-    pmnistpp->num_rows =  reverseInt(pmnistpp->num_rows);
-    pmnistpp->num_cols =  reverseInt(pmnistpp->num_cols);
-    printf("rows = %d\tcols=%d\n",pmnistpp->num_rows,pmnistpp->num_cols);
-    free(pmnistpp);
-    return pmnistpp;
+    long long ret = pmnistpf->num;
+    long long count =  pmnistpf->num * pmnistpf->num_rows * pmnistpf->num_cols;
+
+    int *pInt = (int*)calloc(count,sizeof(int));
+    for(int i=0;i<count;i++){
+        pInt[i] =  reverseInt( pmnistpf->pixel[i]);
+    }
+    free(pmnistpf);
+    *p = pInt;
+    return ret;
+}
+
+
+long long loadMnistLabel(const char *filename,int **p)
+{
+    FILE *fp = fopen(filename, "rb");
+    if (NULL == fp){
+        printf("load file:%s faile\n",filename);
+        return 0;
+    }
+    struct stat st;
+    stat(filename, &st);
+    int fileSize =  st.st_size;
+    struct mnist_label_file *pmlf = (struct mnist_label_file *)malloc(fileSize);
+    memset(pmlf,0x0,fileSize);
+    fread(pmlf,fileSize,1,fp);
+    fclose(fp);
+
+    pmlf->num =  reverseInt(pmlf->num);
+    long long ret = pmlf->num;
+    int *pInt = (int*)calloc(ret,sizeof(int));
+    memset(pInt,0x0,(ret*sizeof(int)));
+
+    for(int i=0;i<ret;i++){
+        pInt[i] =  (int)pmlf->pixel[i];
+        /*printf("%d:  %d\n",i,pInt[i]);*/
+    }
+    free(pmlf);
+    *p = pInt;
+    return ret;
 }
 
 

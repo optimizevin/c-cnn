@@ -32,16 +32,11 @@ struct binaryImg_float {
     float  bImg[0];
 };
 
-struct mnistImg {
-    int hight;
-    int width;
-    float  bImg[0];
-};
 
-struct  mnist_data {
-    int data[28][28];
+struct mnist_img{
+    int rows[28];
+    int cols[28];
 };
-
 
 struct mnist_pixel_file {
     int  msb;                         // 32 bit integer  0x00000803(2051) magic number
@@ -59,5 +54,5 @@ struct mnist_label_file {
 };
 
 struct binaryImg *loadImg(const char* filename);
-long long loadMnistImg(const char* filename,int **p);
-long long loadMnistLabel(const char *filename,int **p);
+long long loadMnistImg(const char* filename, int **p);
+long long loadMnistLabel(const char *filename, int **p);

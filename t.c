@@ -24,7 +24,7 @@ int main(int argc,char **argv)
     
 
     int (*pi)[28] = (void*)pint_img;
-    /*struct mnist_img* si = (struct mnist_img*)pint_img;*/
+
     for(int i=0;i<60000;i++){
        for(int j=0;j<28;j++){
            for(int k=0;k<28;k++){

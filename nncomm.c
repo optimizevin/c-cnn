@@ -1,13 +1,13 @@
 /*
 *   Copyright (C), 2017-1, Tech. Co., Ltd.
-*   File name   : comm.c
+*   File name   : nncomm.c
 *   Author      : vincent
 *   Version     : 0.9
 *   Date        : 2017.6
 *   Description : cnn
 */
 
-#include "comm.h"
+#include "nncomm.h"
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>

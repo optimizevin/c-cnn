@@ -7,7 +7,7 @@
 *   Description : cnn
 */
 
-#include "comm.h"
+#include "nncomm.h"
 #include "cnn.h"
 #include "mnist.h"
 #include <stdlib.h>

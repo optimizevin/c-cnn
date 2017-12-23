@@ -8,7 +8,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 
-#include "comm.h"
+#include "nncomm.h"
 #include "time.h"
 
 

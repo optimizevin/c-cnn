@@ -1,6 +1,6 @@
 /*
 *   Copyright (C), 2017-1, Tech. Co., Ltd.
-*   File name   : comm.h
+*   File name   : nncomm.h
 *   Author      : vincent
 *   Version     : 0.9
 *   Date        : 2017.6
@@ -38,6 +38,8 @@ struct  data_batch {
 
 inline  float* randf(const uint32_t nsize, const float stddev);
 inline  float generateGaussianNoise(const float mean, const float stdDev);
-//inline  mutmul
+// mutmul
+// reduce_ment
+// softmax_
 
 #endif

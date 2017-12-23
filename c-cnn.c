@@ -9,10 +9,18 @@
 #include "stdio.h"
 
 #include "comm.h"
+#include "time.h"
+
+
+void init()
+{
+    srand((unsigned)time(NULL));
+}
 
 int main(int argc,char**argv)
 {
     printf("cnn...\n");
+    init();
 
     long long ret = 0;
     int *pint_img  =  NULL;

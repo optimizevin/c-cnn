@@ -7,32 +7,20 @@
 *   Description : cnn
 */
 
-#include <math.h>
 #include <stdio.h>
+#include <stdint.h>
 
-#define sigmoid_exp fastexp
+struct conv_filter_head {
+    uint32_t  in_height;
+    uint32_t  in_width;
+    uint32_t  filter_batch;
+    float     filter_core[0];
+};
 
-inline double fastexp(double x) {
-	/* e^x = 1 + x + (x^2 / 2!) + (x^3 / 3!) + (x^4 / 4!) */
+inline  float* randf(const uint32_t nsize, const float stddev);
+struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t height,
+        const uint32_t width,const float mu,const float stddev);
+//max_pool_2x2
 
-	double sum = 1 + x;
-	double n = x;
-	double d = 1;
-	double i;
 
-	for(i = 2; i < 100; i++) {
-		n *= x;
-		d *= i;
-		sum += n / d;
-	}
 
-	return sum;
-}
-
-inline double sigmoid(double x) {
-	return 1.00 / (1 + sigmoid_exp(0 - x));
-}
-
-#define Relu (x) x>0?x:0
-//noisyRelu
-//leakyRelu

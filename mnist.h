@@ -14,6 +14,7 @@
 //
 #include "stdio.h"
 #include "stdlib.h"
+#include <stdint.h>
 
 #define  t10k_img_idx       "./mnistdb/t10k-images.idx3-ubyte"
 #define  t10k_label_idx     "./mnistdb/t10k-labels.idx1-ubyte"
@@ -21,38 +22,38 @@
 #define  train_label_idx    "./mnistdb/train-labels.idx1-ubyte"
 
 struct binaryImg {
-    unsigned int hight;
-    unsigned int width;
-    unsigned int bImg[0];
+    uint32_t hight;
+    uint32_t width;
+    uint32_t bImg[0];
 };
 
 struct binaryImg_float {
-    unsigned int hight;
-    unsigned int width;
+    uint32_t hight;
+    uint32_t width;
     float  bImg[0];
 };
 
 
 struct mnist_img{
-    int rows[28];
-    int cols[28];
+    uint32_t rows[28];
+    uint32_t cols[28];
 };
 
 struct mnist_pixel_file {
-    int  msb;                         // 32 bit integer  0x00000803(2051) magic number
-    int  num;                         // 32 bit integer  60000            number of images
-    int  num_rows;                    // 32 bit integer  28               number of rows
-    int  num_cols;                    // 32 bit integer  28               number of columns
+    uint32_t  msb;                         // 32 bit integer  0x00000803(2051) magic number
+    uint32_t  num;                         // 32 bit integer  60000            number of images
+    uint32_t  num_rows;                    // 32 bit integer  28               number of rows
+    uint32_t  num_cols;                    // 32 bit integer  28               number of columns
     unsigned char  pixel[0];          // pixel
 };
 
 
 struct mnist_label_file {
-    int msb;                          // 32 bit integer  0x00000801(2049) magic number (MSB first)
-    int num;                          // 32 bit integer  60000            number of items
+    uint32_t msb;                          // 32 bit integer  0x00000801(2049) magic number (MSB first)
+    uint32_t num;                          // 32 bit integer  60000            number of items
     unsigned char pixel[0];          // unsigned byte   ??               label
 };
 
 struct binaryImg *loadImg(const char* filename);
-long long loadMnistImg(const char* filename, int **p);
-long long loadMnistLabel(const char *filename, int **p);
+uint32_t loadMnistImg(const char* filename, uint32_t **p);
+uint32_t loadMnistLabel(const char *filename, uint32_t **p);

@@ -7,11 +7,37 @@
 *   Description : cnn
 */
 
-struct binaryImg{
-	unsigned int hiegh;
-	unsigned int width;
-	unsigned int bImg[0];
+#ifndef  _CNN_COMM
+#define  _CNN_COMM
+
+#include <stdint.h>
+
+#define Relu (x) x>0?x:0
+//noisyRelu
+//leakyRelu
+//
+
+#ifndef  CHECK_ARRAY
+#define   CHECK_ARRAY
+#define   CHECK_ROWS(_) (int)(sizeof(_)/sizeof(_[0]))
+#define   CHECK_COLS(_) (int)(sizeof(_[0])/sizeof(_[0][0]))
+#endif
+
+inline float sigmoid(const float x);
+
+struct  notelist {
+    struct notelist* pNext;
 };
 
+struct  data_batch {
+    uint32_t  batch;
+    uint32_t  in_height;
+    uint32_t  in_width;
+    float     data[0];
+};
 
-binaryImg *loadImg(const char* filename);
+inline  float* randf(const uint32_t nsize, const float stddev);
+inline  float generateGaussianNoise(const float mean, const float stdDev);
+//inline  mutmul
+
+#endif

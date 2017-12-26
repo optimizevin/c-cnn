@@ -33,8 +33,8 @@ int main(int argc, char **argv)
 
     int  b[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     int (*p)[5] =  (int(*)[5])b;
-    /*int (*p)[5] =  (int*)b;*/
     printf("j=%d\n", p[0][5]);
+    /*int (*p)[5] =  (int*)b;*/
     /*for(int j=0;j<9;j++){*/
     /*printf("j=%d\n",b[j]);*/
     /*}*/
@@ -77,5 +77,8 @@ int main(int argc, char **argv)
     printf("loadMnistLabel ret = %i32u\n", ret);
     free(pint_img);
     free(pint_label);
+
+
+
     return 0;
 }

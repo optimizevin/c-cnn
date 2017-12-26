@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include "nncomm.h"
 
 struct conv_filter_head {
     uint32_t  in_height;
@@ -17,10 +18,12 @@ struct conv_filter_head {
     float     filter_core[0];
 };
 
-inline  float* randf(const uint32_t nsize, const float stddev);
 struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t height,
         const uint32_t width,const float mu,const float stddev);
-//max_pool_2x2
+
+inline struct data_batch *conv2d(const struct data_batch * pdatabatch, 
+        struct conv_filter_head * filter, const int strides, const int padding);
+//max_pool_2x2;
 
 
 

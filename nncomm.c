@@ -15,6 +15,10 @@
 #include <memory.h>
 
 #define sigmoid_exp fastexp
+#define Relu_def(x) x>0?x:0
+//noisyRelu
+//leakyRelu
+//
 
 inline float fastexp(float x)
 {
@@ -70,5 +74,46 @@ inline  float* randf(const uint32_t nsize, const float stddev)
     }
 
     return ret;
+}
+
+inline  void bias(float *pfloat, const  uint32_t nsize,const float stddev)
+{
+    for(uint32_t i=0;i<nsize;i++){
+        pfloat[i]+=stddev;
+    }
+}
+
+
+//////////////////////// 
+//
+
+inline float *MatrixAdd(const float *a,const float *b,uint32_t r,uint32_t c)
+{
+    float * pret = (float*)calloc(r*c,sizeof(float));
+    for(uint32_t i=0;i<r;i++){
+        for(uint32_t j=0;j<c;j++){
+            ((float (*)[c])pret)[i][j] = ((float (*)[c])(a))[i][j] +((float (*)[c])(b))[i][j];
+        }
+    }
+    
+    return pret;
+}
+
+inline float Relu(const float *pf, uint32_t len)
+{
+    float t = 0.f;
+    for(uint32_t i=0;i<len;i++){
+        float  m = Relu_def(pf[i]);
+        t =  t>m?t:m;
+    }
+    
+    return  t;
+}
+
+inline float *MatrixMutiply(const float *a,const float *b,uint32_t n,uint32_t l)
+{
+    float * pret = (float*)calloc(n*l,sizeof(float));
+    /*pret[0][1] = a[0][2]*b[1][2];*/
+    return  pret;
 }
 

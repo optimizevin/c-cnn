@@ -12,10 +12,6 @@
 
 #include <stdint.h>
 
-#define Relu (x) x>0?x:0
-//noisyRelu
-//leakyRelu
-//
 
 #ifndef  CHECK_ARRAY
 #define   CHECK_ARRAY
@@ -36,10 +32,16 @@ struct  data_batch {
     float     data[0];
 };
 
+inline  void bias( float *pfloat, const  uint32_t nsize, const float stddev);
+inline  float  generateGaussianNoise(const float mean, const float stdDev);
 inline  float* randf(const uint32_t nsize, const float stddev);
-inline  float generateGaussianNoise(const float mean, const float stdDev);
+inline  float* MatrixMutiply(const float *a, const float *b, uint32_t n, uint32_t l);
+inline float *MatrixAdd(const float *a,const float *b,uint32_t r,uint32_t c);
+inline float Relu(const float *pf, uint32_t len);
 // mutmul
+// maxpool
 // reduce_ment
 // softmax_
+// adamoptimizer
 
 #endif

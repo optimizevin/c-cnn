@@ -14,5 +14,5 @@ cnn.o : cnn.h cnn.c
 
 .PHONY : clean 
 clean : 
-	-rm t $(tobj)  cscope.*
+	@rm -f t $(tobj)  cscope.*
 

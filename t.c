@@ -31,13 +31,21 @@ int main(int argc, char **argv)
     srand((unsigned)time(NULL));
     printf("test\n");
 
-    int  b[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    int (*p)[5] =  (int(*)[5])b;
-    printf("j=%d\n", p[0][5]);
-    /*int (*p)[5] =  (int*)b;*/
-    /*for(int j=0;j<9;j++){*/
-    /*printf("j=%d\n",b[j]);*/
-    /*}*/
+	/* 220   280 */
+    /* 490   640 */
+
+    float a[]={1.f,2.f,3.f,4.f,5.f,6.f};
+	float b[]={10.f,20.f,30.f,40.f,50.f,60.f};
+	float c[]={0.f,0.f,0.f,0.f};
+    floatMatrixMutiply(a,b,c,2,3,2);
+
+	uint32_t aa[] ={1,2,3,4,5,6};
+	uint32_t bb[] ={10,20,30,40,50,60,70,80,90};
+	uint32_t cc[] ={0,0,0,0,0,0};
+	intMatrixMutiply(aa,bb,cc,2,3,3);
+    
+    return 0;
+
 
     for(;;) {
         uint32_t a, b;

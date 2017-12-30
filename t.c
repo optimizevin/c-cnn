@@ -31,16 +31,27 @@ int main(int argc, char **argv)
     srand((unsigned)time(NULL));
     printf("test\n");
 
-	/* 50  60 */
-	/* 80  90 */
+    /*float b[]={10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f,110.f,120.f};*/
+    /*float out[] = {0.f,0.f,0.f,0.f,0.f,0.f};*/
+    /*max_pool(b,3,4,2,out);*/
+    /*for(int i=0;i<sizeof(out)/sizeof(out[0]);i++)*/
+    /*printf("%f\n",out[i]);*/
 
-	float b[]={10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f,110.f,120.f};
-	float out[] = {0.f,0.f,0.f,0.f,0.f,0.f};
-	max_pool(b,3,4,2,out);
-    for(int i=0;i<sizeof(out)/sizeof(out[0]);i++)
-        printf("%f\n",out[i]);
+    float b[100];
+    memset(b, 0x0, 100);
+    for(int i = 0; i < 100; i++) {
+        b[i] = (rand() / ((float)RAND_MAX)) ;
+    }
 
-    
+    int sum = 0;
+    for(int i = 0; i < 100; i++) {
+        if(b[i] > (1 - 0.7)) {
+            sum++;
+        }
+    }
+    printf("%d\n", sum);
+
+
     return 0;
 
 

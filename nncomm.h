@@ -40,11 +40,12 @@ inline  void bias( float *pfloat, const  uint32_t nsize, const float stddev);
 inline  float  generateGaussianNoise(const float mean, const float stdDev);
 inline  float* randf(const uint32_t nsize, const float stddev);
 
-inline void intMatrixMutiply(const uint32_t *a,const uint32_t *b,uint32_t *c,uint32_t arow,uint32_t acol,uint32_t bcol);
-inline void floatMatrixMutiply(const float *a,const float *b,float *c, uint32_t arow, uint32_t acol,uint32_t bcol);
-inline float *MatrixAdd(const float *a,const float *b,uint32_t r,uint32_t c);
-inline void max_pool(float *src,uint32_t rows,uint32_t cols,uint32_t pool_size,float*pout);
+inline void intMatrixMutiply(const uint32_t *a, const uint32_t *b, uint32_t *c, uint32_t arow, uint32_t acol, uint32_t bcol);
+inline void floatMatrixMutiply(const float *a, const float *b, float *c, uint32_t arow, uint32_t acol, uint32_t bcol);
+inline float *MatrixAdd(const float *a, const float *b, uint32_t r, uint32_t c);
+inline void max_pool(float *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float*pout);
 inline float Relu(const float *pf, uint32_t len);
+inline void Dropout(const float *src, const uint32_t len, float keep_prob, float *out);
 // maxpool
 // reduce_ment
 // softmax_

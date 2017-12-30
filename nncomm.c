@@ -96,6 +96,15 @@ inline float Relu(const float *pf, uint32_t len)
     return  t;
 }
 
+inline void Dropout(const float *src, const uint32_t len, float keep_prob, float *out)
+{
+    for(int i = 0; i < len; i++) {
+        float tmp = (rand() / ((float)RAND_MAX)) ;
+        (tmp > (1 - keep_prob)) ? (out[i] = src[i]) : (out[i] = 0);
+    }
+}
+
+
 inline float *MatrixAdd(const float *a, const float *b, uint32_t r, uint32_t c)
 {
     float * pret = (float*)calloc(r * c, sizeof(float));
@@ -149,7 +158,6 @@ inline void max_pool(float *src, uint32_t rows, uint32_t cols, uint32_t pool_siz
             float tmp = 0.f;
             for(uint32_t ip = 0; ip < pool_size; ip++) {
                 for(uint32_t jp = 0; jp < pool_size; jp++) {
-                    printf("%f\t", pSrc[ip + i][jp + j]);
                     tmp =  MAX(pSrc[ip + i][jp + j], tmp);
                 }
             }

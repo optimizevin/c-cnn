@@ -19,6 +19,10 @@
 #define   CHECK_COLS(_) (int)(sizeof(_[0])/sizeof(_[0][0]))
 #endif
 
+
+#define MAX(a,b) (((a)>(b))?(a):(b))
+#define MIN(a,b) (((a)>(b))?(b):(a))
+
 inline float sigmoid(const float x);
 
 struct  notelist {
@@ -39,6 +43,7 @@ inline  float* randf(const uint32_t nsize, const float stddev);
 inline void intMatrixMutiply(const uint32_t *a,const uint32_t *b,uint32_t *c,uint32_t arow,uint32_t acol,uint32_t bcol);
 inline void floatMatrixMutiply(const float *a,const float *b,float *c, uint32_t arow, uint32_t acol,uint32_t bcol);
 inline float *MatrixAdd(const float *a,const float *b,uint32_t r,uint32_t c);
+inline void max_pool(float *src,uint32_t rows,uint32_t cols,uint32_t pool_size,float*pout);
 inline float Relu(const float *pf, uint32_t len);
 // maxpool
 // reduce_ment

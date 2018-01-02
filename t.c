@@ -37,20 +37,24 @@ int main(int argc, char **argv)
     /*for(int i=0;i<sizeof(out)/sizeof(out[0]);i++)*/
     /*printf("%f\n",out[i]);*/
 
-    float b[100];
-    memset(b, 0x0, 100);
-    for(int i = 0; i < 100; i++) {
-        b[i] = (rand() / ((float)RAND_MAX)) ;
-    }
+    /* float b[10]; */
+    /* memset(b, 0x0, 10); */
+    /* for(int i = 0; i < 10; i++) { */
+    /*     b[i] = (rand() / ((float)RAND_MAX)) ; */
+    /* } */
 
-    int sum = 0;
-    for(int i = 0; i < 100; i++) {
-        if(b[i] > (1 - 0.7)) {
-            sum++;
-        }
-    }
-    printf("%d\n", sum);
+    /* printf("%d\n", sum); */
 
+    float b[]={10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f,110.f,120.f};
+	for(int i=0;i<12;i++){
+		printf("%0.2f ",b[i]);
+	}
+	printf("\n");
+	softMax(b,2,6);
+	for(int i=0;i<12;i++){
+		printf("%0.3f ",b[i]);
+	}
+	printf("\n");
 
     return 0;
 

@@ -46,9 +46,11 @@ inline float *MatrixAdd(const float *a, const float *b, uint32_t r, uint32_t c);
 inline void max_pool(float *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float*pout);
 inline float Relu(const float *pf, uint32_t len);
 inline void Dropout(const float *src, const uint32_t len, float keep_prob, float *out);
-// maxpool
-// reduce_ment
-// softmax_
+inline float reduce_ment(const float *src, const uint32_t len);
+inline void softMax(float *src, uint32_t rows, uint32_t cols);
+inline void softMax_cross_entropy_with_logits(float *src, uint32_t rows, uint32_t cols);
+// tf.equal
+// tf.argmax
 // adamoptimizer
 
 #endif

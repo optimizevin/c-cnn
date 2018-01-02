@@ -126,9 +126,7 @@ inline void intMatrixMutiply(const uint32_t *a, const uint32_t *b, uint32_t *c, 
             for(uint32_t k = 0; k < acol; k++) {
                 ptr_c[j] += ptr_a[k] * b[k * bcol + j];
             }
-            /* printf("%d\t",ptr_c[j]); */
         }
-        /* printf("\n"); */
     }
 }
 
@@ -141,9 +139,7 @@ inline void floatMatrixMutiply(const float *a, const float *b, float *c, uint32_
             for(uint32_t k = 0; k < acol; k++) {
                 ptr_c[j] += ptr_a[k] * b[k * bcol + j];
             }
-            /* printf("%f\t",ptr_c[j]); */
         }
-        /* printf("\n"); */
     }
 }
 
@@ -161,9 +157,41 @@ inline void max_pool(float *src, uint32_t rows, uint32_t cols, uint32_t pool_siz
                     tmp =  MAX(pSrc[ip + i][jp + j], tmp);
                 }
             }
-            /*printf("%d:%d = %f\t",i,j,tmp);*/
             pOut[i][j] =  tmp;
-            /*printf("\n");*/
         }
     }
+}
+
+
+inline float reduce_ment(const float *src, const uint32_t len)
+{
+    float ret = 0.f;
+    for(uint32_t i = 0 ; i < len; i++) {
+        ret += src[i];
+    }
+    ret /= len;
+    return ret;
+}
+
+inline void softMax(float *src, uint32_t rows, uint32_t cols)
+{
+    for (uint32_t i = 0; i < rows; ++i) {
+        float max = 0.0;
+        float sum = 0.0;
+        for (uint32_t j = 0; j < cols; j++) {
+            if (max < src[j + i * cols])
+                max = src[j + i * cols];
+        }
+        for (uint32_t j = 0; j < cols; j++) {
+            src[j + i * cols] = exp(src[j + i * cols] - max);
+            sum += src[j + i * cols];
+        }
+        for (uint32_t j = 0; j < cols; j++) {
+            src[j + i * cols] /= sum;
+        }
+    }
+}
+
+inline void softMax_cross_entropy_with_logits(float *src, uint32_t rows, uint32_t cols)
+{
 }

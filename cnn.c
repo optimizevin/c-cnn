@@ -12,15 +12,15 @@
 #include <memory.h>
 
 struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t height,
-        const uint32_t width,const float mu,const float stddev)
+        const uint32_t width, const float mu, const float stddev)
 {
     const uint32_t size = height * width * batch + sizeof(struct conv_filter_head);
     struct conv_filter_head *pfh = (struct conv_filter_head*)malloc(size);
-    memset(pfh, 0x0,size);
+    memset(pfh, 0x0, size);
     pfh->filter_batch = batch;
     pfh->in_height =  height;
     pfh->in_width = width;
-    for(uint32_t  i=0;i<size;i++){
+    for(uint32_t  i = 0; i < size; i++) {
         pfh->filter_core[i] =  generateGaussianNoise(mu, stddev);
     }
     /*float (*fit)[width] = (float(*)[width])pfh->filter_core;*/
@@ -35,8 +35,8 @@ struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t he
 //第三个参数strides：卷积时在图像每一维的步长，这是一个一维的向量，长度4
 //第四个参数padding：string类型的量，只能是"SAME","VALID"其中之一，这个值决定了不同的卷积方式（后面会介绍）
 
-inline struct data_batch *conv2d(const struct data_batch * pdatabatch, 
-        struct conv_filter_head * filter, const int strides, const int padding)
+inline struct data_batch *conv2d(const struct data_batch * pdatabatch,
+                                 struct conv_filter_head * filter, const int strides, const int padding)
 {
     struct data_batch *pdb =  NULL;
     return pdb;

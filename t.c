@@ -31,30 +31,11 @@ int main(int argc, char **argv)
     srand((unsigned)time(NULL));
     printf("test\n");
 
-    /*float b[]={10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f,110.f,120.f};*/
-    /*float out[] = {0.f,0.f,0.f,0.f,0.f,0.f};*/
-    /*max_pool(b,3,4,2,out);*/
-    /*for(int i=0;i<sizeof(out)/sizeof(out[0]);i++)*/
-    /*printf("%f\n",out[i]);*/
-
-    /* float b[10]; */
-    /* memset(b, 0x0, 10); */
-    /* for(int i = 0; i < 10; i++) { */
-    /*     b[i] = (rand() / ((float)RAND_MAX)) ; */
-    /* } */
-
-    /* printf("%d\n", sum); */
-
-    float b[]={10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f,110.f,120.f};
-	for(int i=0;i<12;i++){
-		printf("%0.2f ",b[i]);
-	}
-	printf("\n");
-	softMax(b,2,6);
-	for(int i=0;i<12;i++){
-		printf("%0.3f ",b[i]);
-	}
-	printf("\n");
+    float b[] = {2.f, 0.5, 1.f, 0.1, 1.f, 3.f};
+    float blabel[] = {0.2, 0.3, 0.5, 0.1, 0.6, 0.3};
+    float out[2] ;
+    softMax_cross_entropy_with_logits(blabel,b,2,3,out);
+    printf("%0.6f\t%0.6f  reduce:%0.6f\n",out[0],out[1], reduce_ment(out,2));
 
     return 0;
 

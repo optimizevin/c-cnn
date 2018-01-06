@@ -173,6 +173,15 @@ inline float reduce_ment(const float *src, const uint32_t len)
     return ret;
 }
 
+
+inline void foreach_log(float *src, const uint32_t len)
+{
+    for(uint32_t i = 0 ; i < len; i++) {
+        src[i] = log(src[i]);
+    }
+}
+
+
 inline void softMax(float *src, uint32_t rows, uint32_t cols)
 {
     for (uint32_t i = 0; i < rows; ++i) {
@@ -192,6 +201,33 @@ inline void softMax(float *src, uint32_t rows, uint32_t cols)
     }
 }
 
-inline void softMax_cross_entropy_with_logits(float *src, uint32_t rows, uint32_t cols)
+inline void softMax_cross_entropy_with_logits(const float *labels, const float *logits, 
+        uint32_t rows, uint32_t cols,float *pOut)
+{
+    float tmp[rows*cols];
+    memcpy(tmp,logits,rows*cols*sizeof(float));
+    softMax(tmp, rows, cols);
+    const  uint32_t bsize = sizeof(tmp) / sizeof(tmp[0]);
+    foreach_log(tmp, bsize);
+
+    float bout[bsize] ;
+    /*memset(bout, 0x0, bsize);*/
+
+    for(int i = 0; i < bsize; i++) {
+        bout[i] = tmp[i] * labels[i];
+    }
+
+    float(*pBout)[cols] = (float(*)[cols])bout;
+    for(int i = 0; i < rows; i++) {
+        float  t = 0.f;
+        for(int j = 0; j < cols; j++) {
+            t += pBout[i][j];
+        }
+        pOut[i] = -t;
+    }
+
+}
+
+inline  void AdamOptimizer()
 {
 }

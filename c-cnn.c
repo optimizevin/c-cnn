@@ -4,6 +4,7 @@
 /*  Version: 0.9  */
 /*  Date: 2017.6
 /*  Description: cnn */
+/*  GitHub      : https://github.com/optimizevin*/
 
 #include "stdlib.h"
 #include "stdio.h"

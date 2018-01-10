@@ -5,6 +5,7 @@
 *   Version     : 0.9
 *   Date        : 2017.6
 *   Description : cnn
+*   GitHub      : https://github.com/optimizevin
 */
 
 #ifndef  _CNN_COMM
@@ -54,9 +55,12 @@ inline void softMax_cross_entropy_with_logits(const float *labels, const float *
         uint32_t rows, uint32_t cols,float *pOut);
 
 inline void foreach_log(float *src, const uint32_t len);
-inline  void AdamOptimizer();
-// tf.equal
-// tf.argmax
+inline  void AdamOptimizer(const float lr,const float beta_1,const float beta_2,
+        const float epsilon,const float decay);
+
 // adamoptimizer
+// tf.equal  相等
+// tf.argmax  返回最大值的最表
+//
 
 #endif

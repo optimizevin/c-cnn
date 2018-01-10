@@ -5,6 +5,7 @@
  *   Version     : 0.9
  *   Date        : 2017.6
  *   Description : cnn
+ *   GitHub      : https://github.com/optimizevin
  */
 
 #include "nncomm.h"
@@ -201,11 +202,11 @@ inline void softMax(float *src, uint32_t rows, uint32_t cols)
     }
 }
 
-inline void softMax_cross_entropy_with_logits(const float *labels, const float *logits, 
-        uint32_t rows, uint32_t cols,float *pOut)
+inline void softMax_cross_entropy_with_logits(const float *labels, const float *logits,
+        uint32_t rows, uint32_t cols, float *pOut)
 {
-    float tmp[rows*cols];
-    memcpy(tmp,logits,rows*cols*sizeof(float));
+    float tmp[rows * cols];
+    memcpy(tmp, logits, rows * cols * sizeof(float));
     softMax(tmp, rows, cols);
     const  uint32_t bsize = sizeof(tmp) / sizeof(tmp[0]);
     foreach_log(tmp, bsize);
@@ -213,14 +214,14 @@ inline void softMax_cross_entropy_with_logits(const float *labels, const float *
     float bout[bsize] ;
     /*memset(bout, 0x0, bsize);*/
 
-    for(int i = 0; i < bsize; i++) {
+    for(uint32_t i = 0; i < bsize; i++) {
         bout[i] = tmp[i] * labels[i];
     }
 
     float(*pBout)[cols] = (float(*)[cols])bout;
-    for(int i = 0; i < rows; i++) {
+    for(uint32_t i = 0; i < rows; i++) {
         float  t = 0.f;
-        for(int j = 0; j < cols; j++) {
+        for(uint32_t j = 0; j < cols; j++) {
             t += pBout[i][j];
         }
         pOut[i] = -t;
@@ -228,6 +229,94 @@ inline void softMax_cross_entropy_with_logits(const float *labels, const float *
 
 }
 
-inline  void AdamOptimizer()
+
+/*SGD with momentum*/
+inline void SGD()
 {
 }
+
+inline void SGD_Momentum()
+{
+}
+
+
+/************************************************
+   "Adam optimizer.
+
+   Default parameters follow those provided in the original paper.
+
+       lr: float >= 0. Learning rate.
+       beta_1: float, 0 < beta < 1. Generally close to 1.
+       beta_2: float, 0 < beta < 1. Generally close to 1.
+       epsilon: float >= 0. Fuzz factor.
+       decay: float >= 0. Learning rate decay over each update.
+
+   # References
+   - [Adam - A Method for Stochastic Optimization](http://arxiv.org/abs/1412.6980v8)
+     learning_rate=0.001,
+     beta1=0.9, beta2=0.999, epsilon=1e-08,
+     use_locking=False,
+
+************************************************/
+
+inline  void AdamOptimizer(const float lr,const float beta_1,const float beta_2,
+        const float epsilon,const float decay)
+{
+}
+
+/*class Adam(Optimizer):*/
+
+/*def __init__(self, lr=0.001, beta_1=0.9, beta_2=0.999,*/
+/*epsilon=1e-8, decay=0., **kwargs):*/
+/*super(Adam, self).__init__(**kwargs)*/
+/*with K.name_scope(self.__class__.__name__):*/
+/*self.iterations = K.variable(0, dtype='int64', name='iterations')*/
+/*self.lr = K.variable(lr, name='lr')*/
+/*self.beta_1 = K.variable(beta_1, name='beta_1')*/
+/*self.beta_2 = K.variable(beta_2, name='beta_2')*/
+/*self.decay = K.variable(decay, name='decay')*/
+/*self.epsilon = epsilon*/
+/*self.initial_decay = decay*/
+
+/*@interfaces.legacy_get_updates_support*/
+/*def get_updates(self, loss, params):*/
+/*grads = self.get_gradients(loss, params)*/
+/*self.updates = [K.update_add(self.iterations, 1)]*/
+
+/*lr = self.lr*/
+/*if self.initial_decay > 0:*/
+/*lr *= (1. / (1. + self.decay * K.cast(self.iterations,*/
+/*K.dtype(self.decay))))*/
+
+/*t = K.cast(self.iterations, K.floatx()) + 1*/
+/*lr_t = lr * (K.sqrt(1. - K.pow(self.beta_2, t)) /*/
+/*(1. - K.pow(self.beta_1, t)))*/
+
+/*ms = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]*/
+/*vs = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]*/
+/*self.weights = [self.iterations] + ms + vs*/
+
+/*for p, g, m, v in zip(params, grads, ms, vs):*/
+/*m_t = (self.beta_1 * m) + (1. - self.beta_1) * g*/
+/*v_t = (self.beta_2 * v) + (1. - self.beta_2) * K.square(g)*/
+/*p_t = p - lr_t * m_t / (K.sqrt(v_t) + self.epsilon)*/
+
+/*self.updates.append(K.update(m, m_t))*/
+/*self.updates.append(K.update(v, v_t))*/
+/*new_p = p_t*/
+
+/*# Apply constraints.*/
+/*if getattr(p, 'constraint', None) is not None:*/
+/*new_p = p.constraint(new_p)*/
+
+/*self.updates.append(K.update(p, new_p))*/
+/*return self.updates*/
+
+/*def get_config(self):*/
+/*config = {'lr': float(K.get_value(self.lr)),*/
+/*'beta_1': float(K.get_value(self.beta_1)),*/
+/*'beta_2': float(K.get_value(self.beta_2)),*/
+/*'decay': float(K.get_value(self.decay)),*/
+/*'epsilon': self.epsilon}*/
+/*base_config = super(Adam, self).get_config()*/
+/*return dict(list(base_config.items()) + list(config.items()))*/

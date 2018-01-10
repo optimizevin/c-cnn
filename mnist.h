@@ -5,6 +5,7 @@
 *   Version     : 0.9
 *   Date        : 2017.6
 *   Description : cnn
+*   GitHub      : https://github.com/optimizevin
 */
 
 //0000     32 bit integer  0x00000803(2051) magic number

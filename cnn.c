@@ -63,8 +63,8 @@ struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t he
 }
 
 
-inline struct data_batch *conv2d(const struct data_batch * pdatabatch,
-                                 struct conv_filter_head * pfilter, const int strides, const int padding)
+inline struct data_batch *conv2d_batch(const struct data_batch * pdatabatch,
+                                       struct conv_filter_head * pfilter, const int strides, const int padding)
 {
     /*struct  data_batch {*/
     /*uint32_t  batch;*/
@@ -79,23 +79,40 @@ inline struct data_batch *conv2d(const struct data_batch * pdatabatch,
     /*float_t   filter_core[0];*/
     /*};*/
 
-    float_t (*pImg)[pdatabatch->in_height][pdatabatch->in_width] =
-        (float_t(*)[pdatabatch->in_height][pdatabatch->in_width])pdatabatch->data;
+    /*float_t (*pImg)[pdatabatch->in_height][pdatabatch->in_width] =*/
+    /*(float_t(*)[pdatabatch->in_height][pdatabatch->in_width])pdatabatch->data;*/
 
     /*float_t (*Pimg)[28][28] = &pdatabatch->data;*/
 
-    float_t (*pCov)[pfilter->in_height][pfilter->in_width] =
-        (float_t(*)[pfilter->in_height][pfilter->in_width])pfilter->filter_core;
+    /*float_t (*pCov)[pfilter->in_height][pfilter->in_width] =*/
+    /*(float_t(*)[pfilter->in_height][pfilter->in_width])pfilter->filter_core;*/
 
-    float_t tmp  = 0.f;
-    for(uint32_t i = 0; i < pdatabatch->batch; i++) {
-        for(uint32_t j = 0; j < pfilter->filter_batch; i++) {
-            pCov++;
-            tmp = (*pImg)[10][10];
-        }
-        pImg++;
-    }
+    /*float_t tmp  = 0.f;*/
+    /*for(uint32_t i = 0; i < pdatabatch->batch; i++) {*/
+    /*for(uint32_t j = 0; j < pfilter->filter_batch; i++) {*/
+    /*pCov++;*/
+    /*tmp = (*pImg)[10][10];*/
+    /*}*/
+    /*pImg++;*/
+    /*}*/
 
     struct data_batch *pdb =  NULL;
     return pdb;
+}
+
+
+inline  float_t conv2d(float_t *pData, float_t *filter, uint32_t in_height, uint32_t in_width, float *pOut)
+{
+    float_t (*pImg)[in_height][in_width] =
+        (float_t(*)[in_height][in_width])pData;
+    float_t (*pfilter)[in_height][in_width] =
+        (float_t(*)[in_height][in_width])filter;
+
+    float_t tmp = 0.f;
+    for(uint32_t i = 0; i < in_height; i++) {
+        for(uint32_t j = 0; j < in_width; j++) {
+            tmp += (*pImg)[i][j] * (*pfilter)[i][j];
+        }
+    }
+    return tmp;
 }

@@ -6,13 +6,47 @@
 *   Date        : 2017.6
 *   Description : cnn
 */
+
+/***************************************************************************
+
+   Vincent ,
+   GitHub      : https://github.com/optimizevin
+
+   Copyright (c) 2017 - .  All rights reserved.
+
+   This code is licensed under the MIT License.  See the FindCUDA.cmake script
+   for the text of the license.
+
+  The MIT License
+
+  License for the specific language governing rights and limitations under
+  Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the "Software"),
+  to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+  OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.
+
+***************************************************************************/
 #include "cnn.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
+#include <math.h>
 
 struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t height,
-        const uint32_t width, const float mu, const float stddev)
+        const uint32_t width, const float_t mu, const float_t stddev)
 {
     const uint32_t size = height * width * batch + sizeof(struct conv_filter_head);
     struct conv_filter_head *pfh = (struct conv_filter_head*)malloc(size);
@@ -23,21 +57,45 @@ struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t he
     for(uint32_t  i = 0; i < size; i++) {
         pfh->filter_core[i] =  generateGaussianNoise(mu, stddev);
     }
-    /*float (*fit)[width] = (float(*)[width])pfh->filter_core;*/
+    /*float_t (*fit)[width] = (float_t(*)[width])pfh->filter_core;*/
     return pfh;
 
 }
 
-//第一个参数input：指需要做卷积的输入图像，它要求是一个Tensor，具有[batch, in_height, in_width, in_channels]这样的shape，
-//具体含义是[训练时一个batch的图片数量, 图片高度, 图片宽度, 图像通道数]，
-//注意这是一个4维的Tensor，要求类型为float32和float64其中之一
-//第二个参数filter：相当于CNN中的卷积核，它要求是一个Tensor，具有[filter_height, filter_width, in_channels, out_channels]这样的shape，具体含义是[卷积核的高度，卷积核的宽度，图像通道数，卷积核个数]，要求类型与参数input相同，有一个地方需要注意，第三维in_channels，就是参数input的第四维
-//第三个参数strides：卷积时在图像每一维的步长，这是一个一维的向量，长度4
-//第四个参数padding：string类型的量，只能是"SAME","VALID"其中之一，这个值决定了不同的卷积方式（后面会介绍）
 
 inline struct data_batch *conv2d(const struct data_batch * pdatabatch,
-                                 struct conv_filter_head * filter, const int strides, const int padding)
+                                 struct conv_filter_head * pfilter, const int strides, const int padding)
 {
+    /*struct  data_batch {*/
+    /*uint32_t  batch;*/
+    /*uint32_t  in_height;*/
+    /*uint32_t  in_width;**/
+    /*float_t     data[0];*/
+    /*};*/
+    /*struct conv_filter_head {*/
+    /*uint32_t  filter_batch;*/
+    /*uint32_t  in_height;*/
+    /*uint32_t  in_width;*/
+    /*float_t   filter_core[0];*/
+    /*};*/
+
+    float_t (*pImg)[pdatabatch->in_height][pdatabatch->in_width] =
+        (float_t(*)[pdatabatch->in_height][pdatabatch->in_width])pdatabatch->data;
+
+    /*float_t (*Pimg)[28][28] = &pdatabatch->data;*/
+
+    float_t (*pCov)[pfilter->in_height][pfilter->in_width] =
+        (float_t(*)[pfilter->in_height][pfilter->in_width])pfilter->filter_core;
+
+    float_t tmp  = 0.f;
+    for(uint32_t i = 0; i < pdatabatch->batch; i++) {
+        for(uint32_t j = 0; j < pfilter->filter_batch; i++) {
+            pCov++;
+            tmp = (*pImg)[10][10];
+        }
+        pImg++;
+    }
+
     struct data_batch *pdb =  NULL;
     return pdb;
 }

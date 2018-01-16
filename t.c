@@ -49,21 +49,39 @@
 #include <memory.h>
 #include <time.h>
 
+/*1, 2, 3, 4,*/
+/*5, 6, 7, 8,*/
+/*9,10,11,12*/
 
-/*typedef  struct  pimg{*/
-/*int h;*/
-/*int w;*/
-/*union{*/
-/*int (*p)[28];*/
-/*int  bin[0];*/
-/*}*/
-/*}ppimg;*/
+/*0.1 0*/
+/*0.1 0 */
+
+/*0.1+0+0.5+0 = 0.6*/
 
 
 int main(int argc, char **argv)
 {
     srand((unsigned)time(NULL));
     printf("test\n");
+
+    float_t b[]={1.f,2.f,3.f,4.f,5.f,6.f,7.f,8.f,9.f,10.f,11.f,12.f};
+    float_t f[] = {0.1,0.f,0.1,0.f};
+
+    float_t*pOut = NULL;
+    pOut = (float_t*)calloc(2*3,sizeof(float_t));
+
+    conv2d_withonefilter(b, 3, 4, f, 2,2, pOut);
+
+    for(int i=0;i<2;i++){
+        for(int j=0;j<3;j++){
+            float_t(*p)[][3] = (float_t(*)[][3])pOut;
+            printf("%0.3f\t",(*p)[i][j]);
+            /*printf("%0.3f",pOut[i*j+j]);*/
+        }
+        printf("\n");
+    }
+    return 0;
+    /*void conv2d(const float_t *pData, uint32_t data_height, uint32_t data_width, float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut)*/
 
     /*float_t b[] = {2.f, 0.5, 1.f, 0.1, 1.f, 3.f};*/
     /*float_t blabel[] = {0.2, 0.3, 0.5, 0.1, 0.6, 0.3};*/

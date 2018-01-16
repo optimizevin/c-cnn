@@ -58,7 +58,8 @@ struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t he
 
 inline struct data_batch *conv2d_batch(const struct data_batch * pdatabatch, 
         struct conv_filter_head * filter, const int strides, const int padding);
-inline  float_t conv2d(float_t *pData, float_t *filter, uint32_t in_height, uint32_t in_width, float *pOut);
+inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, uint32_t data_width,
+                    float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut);
 //max_pool_2x2;
 
 

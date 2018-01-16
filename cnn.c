@@ -101,18 +101,33 @@ inline struct data_batch *conv2d_batch(const struct data_batch * pdatabatch,
 }
 
 
-inline  float_t conv2d(float_t *pData, float_t *filter, uint32_t in_height, uint32_t in_width, float *pOut)
+ /*  1, 2, 3, 4,  */           /*  0.1 0.f */
+ /*  5, 6, 7, 8,  */           /*  0.1 0.f  */
+ /*  9,10,11,12   */
+
+ /* 0.6 0.8 1.0*/
+ /* 1.4 1.6 1.8*/
+inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, uint32_t data_width,
+                    float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut)
 {
-    float_t (*pImg)[in_height][in_width] =
-        (float_t(*)[in_height][in_width])pData;
-    float_t (*pfilter)[in_height][in_width] =
-        (float_t(*)[in_height][in_width])filter;
+    float_t (*pImg)[data_height][data_width] =
+        (float_t(*)[data_height][data_width])pData;
+    float_t (*pfilter)[fl_height][fl_width] =
+        (float_t(*)[fl_height][fl_width])filter;
 
     float_t tmp = 0.f;
-    for(uint32_t i = 0; i < in_height; i++) {
-        for(uint32_t j = 0; j < in_width; j++) {
-            tmp += (*pImg)[i][j] * (*pfilter)[i][j];
+    const uint32_t  nbox_height = data_height - fl_height + 1;
+    const uint32_t  nbox_width = data_width - fl_width + 1;
+
+    for(uint32_t ida = 0; ida < nbox_height; ida++) {
+        for(uint32_t jda = 0; jda < nbox_width; jda++) {
+            tmp =  0.f;
+            for(uint32_t fda = 0; fda < fl_height; fda++) {
+                for(uint32_t fdj = 0; fdj < fl_width; fdj++) {
+                    tmp += (*pImg)[ida + fda][jda + fdj] * (*pfilter)[fda][fdj];
+                }
+            }
+            (*(float_t(*)[][nbox_width])pOut)[ida][jda]=tmp;
         }
     }
-    return tmp;
 }

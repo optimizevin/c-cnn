@@ -235,6 +235,9 @@ inline void softMax(float_t *src, uint32_t rows, uint32_t cols)
     }
 }
 
+/************************************************
+    Cross-entropy cost function
+************************************************/
 inline void softMax_cross_entropy_with_logits(const float_t *labels, const float_t *logits,
         uint32_t rows, uint32_t cols, float_t *pOut)
 {
@@ -246,7 +249,6 @@ inline void softMax_cross_entropy_with_logits(const float_t *labels, const float
 
     float_t bout[bsize] ;
     /*memset(bout, 0x0, bsize);*/
-
     for(uint32_t i = 0; i < bsize; i++) {
         bout[i] = tmp[i] * labels[i];
     }
@@ -262,6 +264,9 @@ inline void softMax_cross_entropy_with_logits(const float_t *labels, const float
 
 }
 
+
+
+
 /************************************************
   "SGD & momentum
        lr: float_t = 0.01 Learning rate.
@@ -275,6 +280,8 @@ inline void SGD_Momentum(const float_t *W,const uint32_t len,const float_t lr, c
    for(uint32_t i=0;i<len;i++){
    } 
 }
+
+
 
 
 /************************************************
@@ -299,6 +306,29 @@ inline  void AdamOptimizer(const float_t lr, const float_t beta_1, const float_t
                            const float_t epsilon, const float_t decay)
 {
 
+}
+
+
+inline  void core_forback()
+{
+    uint32_t  max_epoc = 2000;
+    const float threshold = 0.05;
+    for(uint32_t  istep = 0;i<max_epoc;i++){
+        for(uint32_t count_sample = 0 ;count_sample < m;count_sample++){
+            /*ai to xi*/
+            for(ll =2 ;ll<L;ll++){
+                for_forward(ai);
+            }
+            const(bp_ret);
+            for(ll =L ;ll>2;ll--){
+                for_back(ai);
+            }
+            update(ll[wl,wbl,bl];
+            if(ll[wl,wbl,bl] <threshold)
+                goto exit;
+        }
+    }
+exit:
 }
 
 

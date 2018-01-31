@@ -96,9 +96,14 @@ inline float_t generateGaussianNoise(const float_t mean, const float_t stdDev)
     return mean + stdDev * u * s;
 }
 
-inline float_t sigmoid(const float_t x)
+inline float_t fast_sigmoid(const float_t x)
 {
     return 1.00 / (1 + sigmoid_exp(0 - x));
+}
+
+inline float_t sigmoid(float_t x)
+{
+    return (1 / (1 + exp(-x)));
 }
 
 inline  float_t* randf(const uint32_t nsize, const float_t stddev)
@@ -309,26 +314,60 @@ inline  void AdamOptimizer(const float_t lr, const float_t beta_1, const float_t
 }
 
 
-inline  void core_forback()
+struct layer* initlayer(uint32_t num,float_t bias,uint32_t laytype)
 {
-    uint32_t  max_epoc = 2000;
-    const float threshold = 0.05;
-    for(uint32_t  istep = 0;i<max_epoc;i++){
-        for(uint32_t count_sample = 0 ;count_sample < m;count_sample++){
-            /*ai to xi*/
-            for(ll =2 ;ll<L;ll++){
-                for_forward(ai);
-            }
-            const(bp_ret);
-            for(ll =L ;ll>2;ll--){
-                for_back(ai);
-            }
-            update(ll[wl,wbl,bl];
-            if(ll[wl,wbl,bl] <threshold)
-                goto exit;
-        }
+	struct layer *player = NULL;
+    player = (struct layer*)malloc(sizeof(player->neu)*num*2 + sizeof(player->nenum)
+            +sizeof(player->bias));
+	player->nenum = num;
+	player->bias = bias;
+    player->laytype =  laytype;
+    for(uint32_t i=0;i<num;i++){
+        player->neu[i] = 0.f;
+        player->weight[i] = 0.f;
     }
-exit:
+	return player;
 }
+
+struct layer* makelayer(float_t *src,uint32_t num,float_t bias,float_t gauss,uint32_t laytype)
+{
+	struct layer *player = NULL;
+    player = (struct layer*)malloc(sizeof(player->neu)*num*2 + sizeof(player->nenum)
+            +sizeof(player->bias));
+	player->nenum = num;
+	player->bias = bias;
+    player->laytype =  laytype;
+    for(uint32_t i=0;i<num;i++){
+        player->neu[i] = src[i];
+        player->weight[i] = generateGaussianNoise(0.f,gauss);
+    }
+	return player;
+}
+
+void core_forward(struct layer* player,float_t  LEARNING_RATE)
+{
+}
+
+/*inline  void core_forback()*/
+/*{*/
+    /*uint32_t  max_epoc = 2000;*/
+    /*const float threshold = 0.05;*/
+    /*for(uint32_t  istep = 0;i<max_epoc;i++){*/
+        /*for(uint32_t count_sample = 0 ;count_sample < m;count_sample++){*/
+            /*[>ai to xi<]*/
+            /*for(ll =2 ;ll<L;ll++){*/
+                /*for_forward(ai);*/
+            /*}*/
+            /*const(bp_ret);*/
+            /*for(ll =L ;ll>2;ll--){*/
+                /*for_back(ai);*/
+            /*}*/
+            /*update(ll[wl,wbl,bl];*/
+            /*if(ll[wl,wbl,bl] <threshold)*/
+                /*goto exit;*/
+        /*}*/
+    /*}*/
+/*exit:*/
+/*}*/
 
 

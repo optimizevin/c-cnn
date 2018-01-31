@@ -64,6 +64,12 @@ int main(int argc, char **argv)
     srand((unsigned)time(NULL));
     printf("test\n");
 
+    float_t sigf = 1.105905967;
+    printf("sigmoid %.8f\n",sigmoid(sigf));
+	struct layer * pl = initlayer(5,0.5f,0);
+	pl->neu[4] = 0.f;
+    return 0;
+
     float_t b[]={1.f,2.f,3.f,4.f,5.f,6.f,7.f,8.f,9.f,10.f,11.f,12.f};
     float_t f[] = {0.1,0.f,0.1,0.f};
 
@@ -81,7 +87,7 @@ int main(int argc, char **argv)
         printf("\n");
     }
     return 0;
-    /*void conv2d(const float_t *pData, uint32_t data_height, uint32_t data_width, float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut)*/
+
 
     /*float_t b[] = {2.f, 0.5, 1.f, 0.1, 1.f, 3.f};*/
     /*float_t blabel[] = {0.2, 0.3, 0.5, 0.1, 0.6, 0.3};*/

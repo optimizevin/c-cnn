@@ -10,16 +10,16 @@
 
 /***************************************************************************
 
-   Vincent , 
+   Vincent ,
    GitHub      : https://github.com/optimizevin
- 
+
    Copyright (c) 2017 - .  All rights reserved.
- 
+
    This code is licensed under the MIT License.  See the FindCUDA.cmake script
    for the text of the license.
 
   The MIT License
- 
+
   License for the specific language governing rights and limitations under
   Permission is hereby granted, free of charge, to any person obtaining a
   copy of this software and associated documentation files (the "Software"),
@@ -27,10 +27,10 @@
   the rights to use, copy, modify, merge, publish, distribute, sublicense,
   and/or sell copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following conditions:
- 
+
   The above copyright notice and this permission notice shall be included
   in all copies or substantial portions of the Software.
- 
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -58,30 +58,26 @@
 
 /*0.1+0+0.5+0 = 0.6*/
 
-
-int main(int argc, char **argv)
+int test()
 {
-    srand((unsigned)time(NULL));
-    printf("test\n");
-
     float_t sigf = 1.105905967;
-    printf("sigmoid %.8f\n",sigmoid(sigf));
-	struct layer * pl = initlayer(5,0.5f,0);
-	pl->neu[4] = 0.f;
+    printf("sigmoid %.8f\n", sigmoid(sigf));
+    struct layer * pl = initlayer(5, 0.5f, 0);
+    pl->neu[4] = 0.f;
     return 0;
 
-    float_t b[]={1.f,2.f,3.f,4.f,5.f,6.f,7.f,8.f,9.f,10.f,11.f,12.f};
-    float_t f[] = {0.1,0.f,0.1,0.f};
+    float_t b[] = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f};
+    float_t f[] = {0.1, 0.f, 0.1, 0.f};
 
     float_t*pOut = NULL;
-    pOut = (float_t*)calloc(2*3,sizeof(float_t));
+    pOut = (float_t*)calloc(2 * 3, sizeof(float_t));
 
-    conv2d_withonefilter(b, 3, 4, f, 2,2, pOut);
+    conv2d_withonefilter(b, 3, 4, f, 2, 2, pOut);
 
-    for(int i=0;i<2;i++){
-        for(int j=0;j<3;j++){
+    for(int i = 0; i < 2; i++) {
+        for(int j = 0; j < 3; j++) {
             float_t(*p)[][3] = (float_t(*)[][3])pOut;
-            printf("%0.3f\t",(*p)[i][j]);
+            printf("%0.3f\t", (*p)[i][j]);
             /*printf("%0.3f",pOut[i*j+j]);*/
         }
         printf("\n");
@@ -99,45 +95,49 @@ int main(int argc, char **argv)
 
 
     /*for(;;) {*/
-        /*uint32_t a, b;*/
-        /*scanf("%d%d", &a, &b);*/
-        /*uint32_t k[a][b];*/
-        /*uint32_t  ka = CHECK_ROWS(k);*/
-        /*uint32_t  kb = CHECK_COLS(k);*/
-        /*printf("ka size: %d\nkb size:%d\n", ka, kb);*/
+    /*uint32_t a, b;*/
+    /*scanf("%d%d", &a, &b);*/
+    /*uint32_t k[a][b];*/
+    /*uint32_t  ka = CHECK_ROWS(k);*/
+    /*uint32_t  kb = CHECK_COLS(k);*/
+    /*printf("ka size: %d\nkb size:%d\n", ka, kb);*/
     /*}*/
 
     /*[>uint32_t (*p)[28];<]*/
     /*return 0;*/
 
+}
 
-    uint32_t ret = 0;
-    uint32_t *pint_img  =  NULL;
-    ret = loadMnistImg(train_img_idx, &pint_img);
-    printf("loadMnistImg ret = %i32u\n", ret);
+uint32_t *pint_img  =  NULL;
+uint32_t *pint_label  =  NULL;
 
+void loadall()
+{
+    loadMnistImg(train_img_idx, &pint_img);
+    loadMnistLabel(train_label_idx, &pint_label);
+}
 
-    uint32_t (*pi)[28] = (void*)pint_img;
+void lenet5()
+{
+    struct layer *players[5];
+    memset(players,0x0,sizeof(players));
+    /*makelayer(float_t *src,uint32_t num,float_t bias,float_t stddev,enum LAYERTYPE laytype);*/
+    players[0] = makelayer(28,28,1,0.5,0.8,LAY_INPUT);
+    strcpy(players[0]->layerName,"input");
+}
 
-    for(int i = 0; i < 60000; i++) {
-        for(int j = 0; j < 28; j++) {
-            for(int k = 0; k < 28; k++) {
-                /*int tmp = pi[j][k];*/
-            }
-        }
-        pi++;
-    }
+int main(int argc, char **argv)
+{
+    srand((unsigned)time(NULL));
+    printf("test\n");
+    /*test();*/
 
+    loadall();
     /*pint_img*/
+    lenet5();
 
-
-    uint32_t *pint_label  =  NULL;
-    ret = loadMnistLabel(train_label_idx, &pint_label);
-    printf("loadMnistLabel ret = %i32u\n", ret);
     free(pint_img);
     free(pint_label);
-
-
 
     return 0;
 }

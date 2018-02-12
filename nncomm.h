@@ -64,13 +64,6 @@ struct  notelist {
     struct notelist* pNext;
 };
 
-struct layer{
-	uint32_t laytype;
-	uint32_t nenum;
-	float_t bias;
-	float_t neu[0];
-	float_t weight[0];
-};
 
 struct  data_batch {
     uint32_t  batch;
@@ -102,8 +95,6 @@ inline void SGD_Momentum(const float_t *W,const uint32_t len,const float_t lr, c
 inline  void AdamOptimizer(const float_t lr,const float_t beta_1,const float_t beta_2,
         const float_t epsilon,const float_t decay);
 
-struct layer* makelayer(float_t *src,uint32_t num,float_t bias,float_t gauss,uint32_t laytype);
-struct layer* initlayer(uint32_t num,float_t bias,uint32_t laytype);
 // adamoptimizer
 // tf.equal  相等
 // tf.argmax  返回最大值的最表

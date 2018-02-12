@@ -71,14 +71,14 @@ inline struct data_batch *conv2d_batch(const struct data_batch * pdatabatch,
 }
 
 
- /*  1, 2, 3, 4,  */           /*  0.1 0.f */
- /*  5, 6, 7, 8,  */           /*  0.1 0.f  */
- /*  9,10,11,12   */
+/*  1, 2, 3, 4,  */           /*  0.1 0.f */
+/*  5, 6, 7, 8,  */           /*  0.1 0.f  */
+/*  9,10,11,12   */
 
- /* 0.6 0.8 1.0*/
- /* 1.4 1.6 1.8*/
+/* 0.6 0.8 1.0*/
+/* 1.4 1.6 1.8*/
 inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, uint32_t data_width,
-                    float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut)
+                                  float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut)
 {
     float_t (*pImg)[data_height][data_width] =
         (float_t(*)[data_height][data_width])pData;
@@ -97,7 +97,82 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, ui
                     tmp += (*pImg)[ida + fda][jda + fdj] * (*pfilter)[fda][fdj];
                 }
             }
-            (*(float_t(*)[][nbox_width])pOut)[ida][jda]=tmp;
+            (*(float_t(*)[][nbox_width])pOut)[ida][jda] = tmp;
         }
     }
 }
+
+
+struct layer* initlayer(uint32_t num, float_t bias, enum LAYERTYPE laytype)
+{
+    struct layer *player = NULL;
+    player = (struct layer*)malloc(sizeof(*player->neu) * num * 2 + sizeof(player->nenum)
+                                   + sizeof(player->bias));
+    player->nenum = num;
+    player->bias = bias;
+    player->laytype =  laytype;
+    for(uint32_t i = 0; i < num; i++) {
+        player->neu[i] = 0.f;
+        player->weight[i] = 0.f;
+    }
+    return player;
+}
+
+struct layer* makelayer(uint32_t width, uint32_t height, uint32_t num, float_t bias, float_t stddev, enum LAYERTYPE laytype)
+{
+    struct layer *player = NULL;
+    player = (struct layer*)malloc(width * height * sizeof(*player->neu) * num *2 +
+                           sizeof(player->layerName) + sizeof(player->laytype)+sizeof(bias));
+    player->nenum = num;
+    player->bias = bias;
+    player->laytype =  laytype;
+
+    const uint32_t fullsize = width*height;
+    for(uint32_t i = 0; i < fullsize;i++) {
+        player->weight[i] = generateGaussianNoise(0.f, stddev);
+    }
+    return player;
+}
+
+void core_forward(struct layer** player, uint32_t layernum, float_t  LEARNING_RATE)
+{
+    for(uint32_t ln = 0; ln < layernum; ln++) {
+        struct layer* pLay = player[ln];
+        switch(pLay->laytype) {
+        case LAY_INPUT: {
+            for(uint32_t i = 0; i < pLay->nenum; i++) {
+            }
+        };
+        case LAY_CONV:
+        case LAY_FILT:
+        case LAY_OUT:
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+/*inline  void core_forback()*/
+/*{*/
+/*uint32_t  max_epoc = 2000;*/
+/*const float threshold = 0.05;*/
+/*for(uint32_t  istep = 0;i<max_epoc;i++){*/
+/*for(uint32_t count_sample = 0 ;count_sample < m;count_sample++){*/
+/*[>ai to xi<]*/
+/*for(ll =2 ;ll<L;ll++){*/
+/*for_forward(ai);*/
+/*}*/
+/*const(bp_ret);*/
+/*for(ll =L ;ll>2;ll--){*/
+/*for_back(ai);*/
+/*}*/
+/*update(ll[wl,wbl,bl];*/
+/*if(ll[wl,wbl,bl] <threshold)*/
+/*goto exit;*/
+/*}*/
+/*}*/
+/*exit:*/
+/*}*/
+
+

@@ -183,7 +183,7 @@ inline void float_tMatrixMutiply(const float_t *a, const float_t *b, float_t *c,
 }
 
 
-inline void max_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float_t*pout)
+inline  void max_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float_t*pout)
 {
     float_t(*pSrc)[cols] = (float_t(*)[cols])src;
     float_t(*pOut)[cols - pool_size + 1] = (float_t(*)[cols - pool_size + 1])pout;
@@ -199,6 +199,30 @@ inline void max_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_s
             pOut[i][j] =  tmp;
         }
     }
+}
+
+inline  void ave_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float_t*pout)
+{
+    float_t(*pSrc)[cols] = (float_t(*)[cols])src;
+    float_t(*pOut)[cols - pool_size + 1] = (float_t(*)[cols - pool_size + 1])pout;
+
+    for(uint32_t i = 0; i <= (rows - pool_size); i++) {
+        for(uint32_t j = 0; j <= (cols - pool_size); j++) {
+            float_t tmp = 0.f;
+            for(uint32_t ip = 0; ip < pool_size; ip++) {
+                for(uint32_t jp = 0; jp < pool_size; jp++) {
+                    tmp +=  pSrc[ip + i][jp + j];
+                }
+            }
+            tmp /= pool_size*pool_size;
+            pOut[i][j] =  tmp;
+        }
+    }
+}
+
+inline void subsampling_fun(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, pFun_Pooll pfunpool,float_t*pout)
+{
+    pfunpool(src,rows,cols,pool_size,pout);
 }
 
 

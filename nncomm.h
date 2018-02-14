@@ -54,6 +54,7 @@
 #define   CHECK_COLS(_) (int)(sizeof(_[0])/sizeof(_[0][0]))
 #endif
 
+#define SAFEFREE(_) if(_){free(_);}
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)>(b))?(b):(a))
@@ -72,6 +73,10 @@ struct  data_batch {
     float_t     data[0];
 };
 
+
+typedef  void(*pFun_Pooll)(float_t *, uint32_t , uint32_t , uint32_t , float_t*);
+
+
 inline  void bias( float_t *pfloat_t, const  uint32_t nsize, const float_t stddev);
 inline  float_t  generateGaussianNoise(const float_t mean, const float_t stdDev);
 inline  float_t* randf(const uint32_t nsize, const float_t stddev);
@@ -81,7 +86,12 @@ inline void intMatrixMutiply(const uint32_t *a, const uint32_t *b, uint32_t *c,
 inline void float_tMatrixMutiply(const float_t *a, const float_t *b, float_t *c,
         uint32_t arow, uint32_t acol, uint32_t bcol);
 inline float_t *MatrixAdd(const float_t *a, const float_t *b, uint32_t r, uint32_t c);
+
 inline void max_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float_t*pout);
+inline  void ave_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float_t*pout);
+
+inline void subsampling_fun(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, pFun_Pooll pfunpool,float_t*pout);
+
 inline float_t Relu(const float_t *pf, uint32_t len);
 inline void Dropout(const float_t *src, const uint32_t len, float_t keep_prob, float_t *out);
 inline float_t reduce_ment(const float_t *src, const uint32_t len);

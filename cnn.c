@@ -48,16 +48,16 @@
 struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t height,
         const uint32_t width, const float_t mu, const float_t stddev)
 {
-    const uint32_t size = height * width * batch + sizeof(struct conv_filter_head);
+    const uint32_t nbatch = height*width*batch;
+    const uint32_t size = nbatch*sizeof(float_t) + sizeof(struct conv_filter_head);
     struct conv_filter_head *pfh = (struct conv_filter_head*)malloc(size);
     memset(pfh, 0x0, size);
     pfh->filter_batch = batch;
     pfh->in_height =  height;
     pfh->in_width = width;
-    for(uint32_t  i = 0; i < size; i++) {
+    for(uint32_t  i = 0; i < nbatch; i++) {
         pfh->filter_core[i] =  generateGaussianNoise(mu, stddev);
     }
-    /*float_t (*fit)[width] = (float_t(*)[width])pfh->filter_core;*/
     return pfh;
 
 }
@@ -103,55 +103,31 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, ui
 }
 
 
-struct layer* initlayer(uint32_t num, float_t bias, enum LAYERTYPE laytype)
+struct layer* makelayer(const char* pstr, uint32_t width, uint32_t height,
+                        uint32_t num, float_t bias, float_t stddev, enum LAYERTYPE laytype)
 {
     struct layer *player = NULL;
-    player = (struct layer*)malloc(sizeof(*player->neu) * num * 2 + sizeof(player->nenum)
-                                   + sizeof(player->bias));
+    player = (struct layer*)malloc(width * height * sizeof(*player->neu) * num * 2 +
+                                   sizeof(player->layerName) + sizeof(player->laytype) +
+                                   sizeof(player->pconv_filter) + sizeof(bias));
+
+    strcpy(player->layerName, pstr);
     player->nenum = num;
     player->bias = bias;
     player->laytype =  laytype;
-    for(uint32_t i = 0; i < num; i++) {
-        player->neu[i] = 0.f;
-        player->weight[i] = 0.f;
+    player->pconv_filter = NULL;
+
+    if(player->laytype == LAY_CONV) {
+        player->pconv_filter = create_convcore(width, height, num, 0.5, stddev);
     }
-    return player;
-}
 
-struct layer* makelayer(uint32_t width, uint32_t height, uint32_t num, float_t bias, float_t stddev, enum LAYERTYPE laytype)
-{
-    struct layer *player = NULL;
-    player = (struct layer*)malloc(width * height * sizeof(*player->neu) * num *2 +
-                           sizeof(player->layerName) + sizeof(player->laytype)+sizeof(bias));
-    player->nenum = num;
-    player->bias = bias;
-    player->laytype =  laytype;
-
-    const uint32_t fullsize = width*height;
-    for(uint32_t i = 0; i < fullsize;i++) {
+    const uint32_t fullsize = width * height;
+    for(uint32_t i = 0; i < fullsize; i++) {
         player->weight[i] = generateGaussianNoise(0.f, stddev);
     }
     return player;
 }
 
-void core_forward(struct layer** player, uint32_t layernum, float_t  LEARNING_RATE)
-{
-    for(uint32_t ln = 0; ln < layernum; ln++) {
-        struct layer* pLay = player[ln];
-        switch(pLay->laytype) {
-        case LAY_INPUT: {
-            for(uint32_t i = 0; i < pLay->nenum; i++) {
-            }
-        };
-        case LAY_CONV:
-        case LAY_FILT:
-        case LAY_OUT:
-            break;
-        default:
-            break;
-        }
-    }
-}
 
 /*inline  void core_forback()*/
 /*{*/

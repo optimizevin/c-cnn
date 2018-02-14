@@ -50,20 +50,36 @@ struct conv_filter_head {
     uint32_t  filter_batch;
     uint32_t  in_height;
     uint32_t  in_width;
+	float_t bias;
     float_t   filter_core[0];
+};
+
+struct output_block {
+    uint32_t  in_height;
+    uint32_t  in_width;
+    float_t   data[0];
+};
+
+struct subsampling{
+    uint32_t  in_height;
+    uint32_t  in_width;
+    float_t   data[0];
 };
 
 enum LAYERTYPE {
     LAY_INPUT,
     LAY_CONV,
-    LAY_FILT,
+    LAY_POOL,
+    LAY_FULLYCONNECT,
     LAY_OUT
 };
+
 
 struct layer{
     char layerName[128];
 	enum LAYERTYPE laytype;
 	uint32_t nenum;
+    struct conv_filter_head* pconv_filter;
 	float_t bias;
 	float_t neu[0];
 	float_t weight[0];
@@ -73,16 +89,13 @@ struct layer{
 struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t height,
         const uint32_t width,const float_t mu,const float_t stddev);
 
-struct layer* makelayer(uint32_t width,uint32_t height,uint32_t num,float_t bias,float_t stddev,enum LAYERTYPE laytype);
-struct layer* initlayer(uint32_t num,float_t bias,enum LAYERTYPE laytype);
-
 inline struct data_batch *conv2d_batch(const struct data_batch * pdatabatch, 
         struct conv_filter_head * filter, const int strides, const int padding);
 inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, uint32_t data_width,
                     float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut);
 
-struct layer* initlayer(uint32_t num,float_t bias,enum LAYERTYPE laytype);
-struct layer* makelayer(uint32_t width,uint32_t height,uint32_t num,float_t bias,float_t stddev,enum LAYERTYPE laytype);
+struct layer* makelayer(const char *pstr,uint32_t width,uint32_t height,uint32_t num,
+        float_t bias,float_t stddev,enum LAYERTYPE laytype);
 //max_pool_2x2;
 
 

@@ -48,6 +48,8 @@
 #include <stdio.h>
 #include <memory.h>
 #include <time.h>
+#include <assert.h>
+
 
 /*1, 2, 3, 4,*/
 /*5, 6, 7, 8,*/
@@ -62,12 +64,12 @@ int test()
 {
     float_t sigf = 1.105905967;
     printf("sigmoid %.8f\n", sigmoid(sigf));
-    struct layer * pl = initlayer(5, 0.5f, 0);
-    pl->neu[4] = 0.f;
-    return 0;
 
     float_t b[] = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f};
     float_t f[] = {0.1, 0.f, 0.1, 0.f};
+
+    ave_pool(b, 3, 4, 2, NULL);
+    return 0;
 
     float_t*pOut = NULL;
     pOut = (float_t*)calloc(2 * 3, sizeof(float_t));
@@ -117,24 +119,70 @@ void loadall()
     loadMnistLabel(train_label_idx, &pint_label);
 }
 
-void lenet5()
+void connv(struct layer* pLayconv)
 {
-    struct layer *players[5];
-    memset(players,0x0,sizeof(players));
-    /*makelayer(float_t *src,uint32_t num,float_t bias,float_t stddev,enum LAYERTYPE laytype);*/
-    players[0] = makelayer(28,28,1,0.5,0.8,LAY_INPUT);
-    strcpy(players[0]->layerName,"input");
+    printf("batch:%d\n",pLayconv->pconv_filter->filter_batch);
 }
+
+void core_forward(struct layer** player, uint32_t layernum, float_t  LEARNING_RATE)
+{
+    for(uint32_t ln = 0; ln < layernum; ln++) {
+        struct layer* pLay = player[ln];
+        assert(pLay!=NULL);
+        switch(pLay->laytype) {
+        case LAY_INPUT:
+            break;
+        case LAY_CONV:
+            connv(pLay);
+            break;
+        case LAY_OUT:
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+
+void initNet()
+{
+    struct layer *players[8] = {0};
+
+    players[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);
+    players[1] = makelayer("conv1", 6, 6, 6, 0.5, 0.8, LAY_CONV);
+    /*players[2] = makelayer("s2",2,2,1,0.5,0.8,LAY_POOL);*/
+    /*subsampling_fun();*/
+    /*players[3] = makelayer("conv3",5,5,16,0.5,0.8,LAY_CONV);*/
+    /*players[4] = makelayer("s4",2,2,1,0.5,0.8,LAY_SUBSAM);*/
+    /*players[5] = makelayer("conv5",5,5,120,0.5,0.8,LAY_CONV);*/
+    /*players[6] = makelayer("FullyConnect",28,28,1,0.5,0.8,LAY_FULLYCONNECT);*/
+    /*players[7] = makelayer("Output",10,1,1,0.5,0.8,LAY_OUT);*/
+
+
+    /*const uint32_t size = 28*28;*/
+    /*for(uint32_t i=0;i<60000;i++){*/
+    /*const uint32_t step = i*size;*/
+    /*memcpy(players[0]->neu,(float_t*)pint_img+step,size);*/
+    /*}*/
+    core_forward(players,8,0.01);
+    free(players[0]);
+    SAFEFREE(players[1]->pconv_filter);
+    free(players[1]);
+    free(players[2]);
+}
+
 
 int main(int argc, char **argv)
 {
     srand((unsigned)time(NULL));
     printf("test\n");
+    char n[10] = {0};
+    10[n] = 1;
     /*test();*/
 
     loadall();
     /*pint_img*/
-    lenet5();
+    initNet();
 
     free(pint_img);
     free(pint_label);

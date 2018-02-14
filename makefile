@@ -1,4 +1,4 @@
-CC = gcc
+CC = gcc 
 CFLAGS += -g -ansi -std=c99 -Wall -fgnu89-inline
 CLIBS += -lm
 #CLIBS += -lglib-2.0 -lpthread `pkg-config --libs opencv`   

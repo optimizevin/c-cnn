@@ -49,32 +49,12 @@
 
 #define  NAME_LENGTH  128
 
-struct conv_filter_head {
-    uint32_t  filter_batch;
-    uint32_t  in_height;
-    uint32_t  in_width;
-    float_t   bias;
-    float_t   filter_core[0];
-};
-
-struct input_data {
-    uint32_t  filter_batch;
-    uint32_t  in_height;
-    uint32_t  in_width;
-    float_t   filter_core[0];
-};
-
 struct output_block {
     uint32_t  in_height;
     uint32_t  in_width;
     float_t   data[0];
 };
 
-struct subsampling {
-    uint32_t  in_height;
-    uint32_t  in_width;
-    float_t   data[0];
-};
 
 enum LAYERTYPE {
     LAY_INPUT,
@@ -115,30 +95,9 @@ union store_layer {
 };
 
 
-
-struct layer {
-    char layerName[NAME_LENGTH];
-    enum LAYERTYPE laytype;
-    uint32_t nenum;
-    struct conv_filter_head* pconv_filter;
-
-    uint32_t  in_height;
-    uint32_t  in_width;
-
-    float_t bias;
-    float_t neu[0];
-    float_t weight[0];
-};
-
-
-struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t height,
-        const uint32_t width, const float_t mu, const float_t stddev);
-
-inline struct data_batch *conv2d_batch(const struct data_batch * pdatabatch,
-                                       struct conv_filter_head * filter, const int strides, const int padding);
 inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, uint32_t data_width,
                                   float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut);
-inline  void conv2d_withlayer(struct layer* player, float_t *pOut);
+inline  void conv2d_withlayer(float_t *pOut);
 
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t width, uint32_t height,
@@ -149,7 +108,7 @@ struct conv_layer* create_convlayer(const char* pstr, uint32_t width, uint32_t h
 void destory_convlayer(struct conv_layer* pconv_layer);
 void destory_inputlayer(struct input_layer* pinput_layer);
 
-inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
-                                  const uint32_t height,  const float_t stddev);
+//inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
+                                  //const uint32_t height,  const float_t stddev);
 
 

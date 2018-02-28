@@ -45,22 +45,6 @@
 #include <memory.h>
 #include <math.h>
 
-struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t height,
-        const uint32_t width, const float_t mu, const float_t stddev)
-{
-    const uint32_t nbatch = height * width * batch;
-    const uint32_t size = nbatch * sizeof(float_t) + sizeof(struct conv_filter_head);
-    struct conv_filter_head *pfh = (struct conv_filter_head*)malloc(size);
-    memset(pfh, 0x0, size);
-    pfh->filter_batch = batch;
-    pfh->in_height =  height;
-    pfh->in_width = width;
-    for(uint32_t  i = 0; i < nbatch; i++) {
-        pfh->filter_core[i] =  generateGaussianNoise(mu, stddev);
-    }
-    return pfh;
-
-}
 
 inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
                                   const uint32_t height,  const float_t stddev)
@@ -106,7 +90,7 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, ui
     }
 }
 
-inline  void conv2d_withlayer(struct layer* player, float_t *pOut)
+inline  void conv2d_withlayer(float_t *pOut)
 {
     /*uint32_t  data_width =  player->in_width;*/
     /*uint32_t  data_height = player->in_height;*/

@@ -119,39 +119,13 @@ void loadall()
     loadMnistLabel(train_label_idx, &pint_label);
 }
 
-void connv(struct layer* pLayconv)
-{
-    printf("batch:%d\n", pLayconv->pconv_filter->filter_batch);
-
-    float data[1024] = {0};
-    conv2d_withlayer(pLayconv, data);
-}
-
-void core_forward(struct layer** player, uint32_t layernum, float_t  LEARNING_RATE)
-{
-    for(uint32_t ln = 0; ln < layernum; ln++) {
-        struct layer* pLay = player[ln];
-        assert(pLay != NULL);
-        switch(pLay->laytype) {
-        case LAY_INPUT:
-            break;
-        case LAY_CONV:
-            connv(pLay);
-            break;
-        case LAY_OUT:
-            break;
-        default:
-            break;
-        }
-    }
-}
-
-
 void initNet()
 {
     union store_layer players[8];
     players[0].pinputlayer = create_inputlayer("input", (float_t*)pint_img, 28, 28, 1 , 0.5, 0.8);
     players[1].pconvlayer = create_convlayer("conv1", 6, 6, 8, 0.5, 0.8);
+
+    float_t output[23][23];
 
     /*players[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);*/
     /*players[1] = makelayer("conv1", 8, 6, 6, 0.5, 0.8, LAY_CONV);*/

@@ -66,14 +66,6 @@ struct  notelist {
 };
 
 
-struct  data_batch {
-    uint32_t  batch;
-    uint32_t  in_height;
-    uint32_t  in_width;
-    float_t     data[0];
-};
-
-
 typedef  void(*pFun_Pooll)(float_t *, uint32_t , uint32_t , uint32_t , float_t*);
 
 

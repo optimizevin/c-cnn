@@ -10,16 +10,16 @@
 
 /***************************************************************************
 
-   Vincent , 
+   Vincent ,
    GitHub      : https://github.com/optimizevin
- 
+
    Copyright (c) 2017 - .  All rights reserved.
- 
+
    This code is licensed under the MIT License.  See the FindCUDA.cmake script
    for the text of the license.
 
   The MIT License
- 
+
   License for the specific language governing rights and limitations under
   Permission is hereby granted, free of charge, to any person obtaining a
   copy of this software and associated documentation files (the "Software"),
@@ -27,10 +27,10 @@
   the rights to use, copy, modify, merge, publish, distribute, sublicense,
   and/or sell copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following conditions:
- 
+
   The above copyright notice and this permission notice shall be included
   in all copies or substantial portions of the Software.
- 
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -45,12 +45,22 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "nncomm.h"
+#include <assert.h>
+
+#define  NAME_LENGTH  128
 
 struct conv_filter_head {
     uint32_t  filter_batch;
     uint32_t  in_height;
     uint32_t  in_width;
-	float_t bias;
+    float_t   bias;
+    float_t   filter_core[0];
+};
+
+struct input_data {
+    uint32_t  filter_batch;
+    uint32_t  in_height;
+    uint32_t  in_width;
     float_t   filter_core[0];
 };
 
@@ -60,7 +70,7 @@ struct output_block {
     float_t   data[0];
 };
 
-struct subsampling{
+struct subsampling {
     uint32_t  in_height;
     uint32_t  in_width;
     float_t   data[0];
@@ -74,29 +84,72 @@ enum LAYERTYPE {
     LAY_OUT
 };
 
-
-struct layer{
+struct base_layer {
     char layerName[128];
-	enum LAYERTYPE laytype;
-	uint32_t nenum;
+    enum LAYERTYPE laytype;
+};
+
+
+struct input_layer {
+    struct base_layer base;
+    uint32_t nenum;
+    uint32_t  in_height;
+    uint32_t  in_width;
+    float_t bias;
+    float_t *neu;
+    float_t *weight;
+};
+
+struct conv_layer {
+    struct base_layer base;
+    uint32_t  filter_batch;
+    uint32_t  fl_height;
+    uint32_t  fl_width;
+    float_t   bias;
+    float_t   *filter_core;
+};
+
+union store_layer {
+    struct input_layer* pinputlayer;
+    struct conv_layer*  pconvlayer;
+};
+
+
+
+struct layer {
+    char layerName[NAME_LENGTH];
+    enum LAYERTYPE laytype;
+    uint32_t nenum;
     struct conv_filter_head* pconv_filter;
-	float_t bias;
-	float_t neu[0];
-	float_t weight[0];
+
+    uint32_t  in_height;
+    uint32_t  in_width;
+
+    float_t bias;
+    float_t neu[0];
+    float_t weight[0];
 };
 
 
 struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t height,
-        const uint32_t width,const float_t mu,const float_t stddev);
+        const uint32_t width, const float_t mu, const float_t stddev);
 
-inline struct data_batch *conv2d_batch(const struct data_batch * pdatabatch, 
-        struct conv_filter_head * filter, const int strides, const int padding);
+inline struct data_batch *conv2d_batch(const struct data_batch * pdatabatch,
+                                       struct conv_filter_head * filter, const int strides, const int padding);
 inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, uint32_t data_width,
-                    float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut);
+                                  float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut);
+inline  void conv2d_withlayer(struct layer* player, float_t *pOut);
 
-struct layer* makelayer(const char *pstr,uint32_t width,uint32_t height,uint32_t num,
-        float_t bias,float_t stddev,enum LAYERTYPE laytype);
-//max_pool_2x2;
 
+struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t width, uint32_t height,
+                                      const uint32_t batch, float_t bias, float_t stddev);
+struct conv_layer* create_convlayer(const char* pstr, uint32_t width, uint32_t height, uint32_t batch,
+                                    float_t bias, float_t stddev);
+
+void destory_convlayer(struct conv_layer* pconv_layer);
+void destory_inputlayer(struct input_layer* pinput_layer);
+
+inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
+                                  const uint32_t height,  const float_t stddev);
 
 

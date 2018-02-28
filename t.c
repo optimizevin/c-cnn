@@ -121,14 +121,17 @@ void loadall()
 
 void connv(struct layer* pLayconv)
 {
-    printf("batch:%d\n",pLayconv->pconv_filter->filter_batch);
+    printf("batch:%d\n", pLayconv->pconv_filter->filter_batch);
+
+    float data[1024] = {0};
+    conv2d_withlayer(pLayconv, data);
 }
 
 void core_forward(struct layer** player, uint32_t layernum, float_t  LEARNING_RATE)
 {
     for(uint32_t ln = 0; ln < layernum; ln++) {
         struct layer* pLay = player[ln];
-        assert(pLay!=NULL);
+        assert(pLay != NULL);
         switch(pLay->laytype) {
         case LAY_INPUT:
             break;
@@ -146,10 +149,12 @@ void core_forward(struct layer** player, uint32_t layernum, float_t  LEARNING_RA
 
 void initNet()
 {
-    struct layer *players[8] = {0};
+    union store_layer players[8];
+    players[0].pinputlayer = create_inputlayer("input", (float_t*)pint_img, 28, 28, 1 , 0.5, 0.8);
+    players[1].pconvlayer = create_convlayer("conv1", 6, 6, 8, 0.5, 0.8);
 
-    players[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);
-    players[1] = makelayer("conv1", 6, 6, 6, 0.5, 0.8, LAY_CONV);
+    /*players[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);*/
+    /*players[1] = makelayer("conv1", 8, 6, 6, 0.5, 0.8, LAY_CONV);*/
     /*players[2] = makelayer("s2",2,2,1,0.5,0.8,LAY_POOL);*/
     /*subsampling_fun();*/
     /*players[3] = makelayer("conv3",5,5,16,0.5,0.8,LAY_CONV);*/
@@ -164,11 +169,11 @@ void initNet()
     /*const uint32_t step = i*size;*/
     /*memcpy(players[0]->neu,(float_t*)pint_img+step,size);*/
     /*}*/
-    core_forward(players,8,0.01);
-    free(players[0]);
-    SAFEFREE(players[1]->pconv_filter);
-    free(players[1]);
-    free(players[2]);
+    /*core_forward(players, 2, 0.01);*/
+
+    /*destory_convlayer(players[1].pconvlayer);*/
+    destory_inputlayer(players[0].pinputlayer);
+    /*SAFEFREE(players[1]->pconv_filter);*/
 }
 
 
@@ -176,8 +181,6 @@ int main(int argc, char **argv)
 {
     srand((unsigned)time(NULL));
     printf("test\n");
-    char n[10] = {0};
-    10[n] = 1;
     /*test();*/
 
     loadall();

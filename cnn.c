@@ -48,8 +48,8 @@
 struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t height,
         const uint32_t width, const float_t mu, const float_t stddev)
 {
-    const uint32_t nbatch = height*width*batch;
-    const uint32_t size = nbatch*sizeof(float_t) + sizeof(struct conv_filter_head);
+    const uint32_t nbatch = height * width * batch;
+    const uint32_t size = nbatch * sizeof(float_t) + sizeof(struct conv_filter_head);
     struct conv_filter_head *pfh = (struct conv_filter_head*)malloc(size);
     memset(pfh, 0x0, size);
     pfh->filter_batch = batch;
@@ -61,6 +61,19 @@ struct conv_filter_head *create_convcore(const uint32_t batch, const uint32_t he
     return pfh;
 
 }
+
+inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
+                                  const uint32_t height,  const float_t stddev)
+{
+    const uint32_t nsize = width * height * batch * sizeof(float_t);
+    assert(nsize > 0);
+    float_t *pret = (float_t*)calloc(nsize, 1);
+    for(uint32_t  i = 0; i < nsize; i++) {
+        pret[i] =  generateGaussianNoise(0.f, stddev);
+    }
+    return pret;
+}
+
 
 
 inline struct data_batch *conv2d_batch(const struct data_batch * pdatabatch,
@@ -102,53 +115,91 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, ui
     }
 }
 
-
-struct layer* makelayer(const char* pstr, uint32_t width, uint32_t height,
-                        uint32_t num, float_t bias, float_t stddev, enum LAYERTYPE laytype)
+inline  void conv2d_withlayer(struct layer* player, float_t *pOut)
 {
-    struct layer *player = NULL;
-    player = (struct layer*)malloc(width * height * sizeof(*player->neu) * num * 2 +
-                                   sizeof(player->layerName) + sizeof(player->laytype) +
-                                   sizeof(player->pconv_filter) + sizeof(bias));
+    /*uint32_t  data_width =  player->in_width;*/
+    /*uint32_t  data_height = player->in_height;*/
 
-    strcpy(player->layerName, pstr);
-    player->nenum = num;
-    player->bias = bias;
-    player->laytype =  laytype;
-    player->pconv_filter = NULL;
+    /*uint32_t  fl_width =  player->pconv_filter->in_width;*/
+    /*uint32_t  fl_height = player->pconv_filter->in_height;*/
 
-    if(player->laytype == LAY_CONV) {
-        player->pconv_filter = create_convcore(width, height, num, 0.5, stddev);
-    }
+    /*float_t *pData = player->neu;*/
+    /*float_t *filter = player->pconv_filter->filter_core;*/
 
-    const uint32_t fullsize = width * height;
+    /*float_t (*pImg)[data_height][data_width] =*/
+    /*(float_t(*)[data_height][data_width])pData;*/
+    /*float_t (*pfilter)[fl_height][fl_width] =*/
+    /*(float_t(*)[fl_height][fl_width])filter;*/
+
+    /*float_t tmp = 0.f;*/
+    /*const uint32_t  nbox_height = data_height - fl_height + 1;*/
+    /*const uint32_t  nbox_width = data_width - fl_width + 1;*/
+
+    /*for(uint32_t ida = 0; ida < nbox_height; ida++) {*/
+    /*for(uint32_t jda = 0; jda < nbox_width; jda++) {*/
+    /*tmp =  0.f;*/
+    /*for(uint32_t fda = 0; fda < fl_height; fda++) {*/
+    /*for(uint32_t fdj = 0; fdj < fl_width; fdj++) {*/
+    /*tmp += (*pImg)[ida + fda][jda + fdj] * (*pfilter)[fda][fdj];*/
+    /*}*/
+    /*}*/
+    /*(*(float_t(*)[][nbox_width])pOut)[ida][jda] = tmp;*/
+    /*}*/
+    /*}*/
+}
+
+struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t width, uint32_t height,
+                                      const uint32_t batch, float_t bias, float_t stddev)
+{
+    assert(pdata != NULL);
+    struct input_layer* ret = NULL;
+    const uint32_t fullsize = width * height * batch;
+
+    ret = (struct input_layer*)calloc(sizeof(ret),1);
+    ret->base.laytype = LAY_INPUT;
+    strcpy(ret->base.layerName, pstr);
+    ret->in_width = width;
+    ret->in_height = height;
+    ret->bias = bias;
+    ret->nenum = fullsize;
+    ret->neu = (float_t*)calloc(fullsize*sizeof(float_t), 1);
+    memcpy(ret->neu, pdata, fullsize);
+    ret->weight = (float_t*)calloc(fullsize*sizeof(float_t), 1);
     for(uint32_t i = 0; i < fullsize; i++) {
-        player->weight[i] = generateGaussianNoise(0.f, stddev);
+        ret->weight[i] = generateGaussianNoise(0.f, stddev);
     }
-    return player;
+    return ret;
+}
+
+void destory_inputlayer(struct input_layer* pinput_layer)
+{
+    if(pinput_layer->neu) {
+        free(pinput_layer->neu);
+    }
+    if(pinput_layer->weight) {
+        free(pinput_layer->weight);
+    }
+    free(pinput_layer);
 }
 
 
-/*inline  void core_forback()*/
-/*{*/
-/*uint32_t  max_epoc = 2000;*/
-/*const float threshold = 0.05;*/
-/*for(uint32_t  istep = 0;i<max_epoc;i++){*/
-/*for(uint32_t count_sample = 0 ;count_sample < m;count_sample++){*/
-/*[>ai to xi<]*/
-/*for(ll =2 ;ll<L;ll++){*/
-/*for_forward(ai);*/
-/*}*/
-/*const(bp_ret);*/
-/*for(ll =L ;ll>2;ll--){*/
-/*for_back(ai);*/
-/*}*/
-/*update(ll[wl,wbl,bl];*/
-/*if(ll[wl,wbl,bl] <threshold)*/
-/*goto exit;*/
-/*}*/
-/*}*/
-/*exit:*/
-/*}*/
+struct conv_layer* create_convlayer(const char* pstr, uint32_t width, uint32_t height, uint32_t batch,
+                                    float_t bias, float_t stddev)
+{
+    struct conv_layer* ret = (struct conv_layer*)calloc(sizeof(ret),1);
+    ret->fl_width = width;
+    ret->fl_height = height;
+    ret->filter_batch = batch;
+    ret->bias = bias;
+    ret->filter_core = create_filtercore(batch, width, height, stddev);
+    return ret;
+}
 
+void destory_convlayer(struct conv_layer* pconv_layer)
+{
+    if(pconv_layer->filter_core) {
+        free(pconv_layer->filter_core);
+    }
+    free(pconv_layer);
+}
 

@@ -67,20 +67,11 @@ inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
 {
     const uint32_t nsize = width * height * batch * sizeof(float_t);
     assert(nsize > 0);
-    float_t *pret = (float_t*)calloc(nsize, 1);
+    float_t *pret = (float_t*)calloc(nsize*sizeof(float_t), 1);
     for(uint32_t  i = 0; i < nsize; i++) {
         pret[i] =  generateGaussianNoise(0.f, stddev);
     }
     return pret;
-}
-
-
-
-inline struct data_batch *conv2d_batch(const struct data_batch * pdatabatch,
-                                       struct conv_filter_head * pfilter, const int strides, const int padding)
-{
-    struct data_batch *pdb =  NULL;
-    return pdb;
 }
 
 

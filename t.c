@@ -171,7 +171,7 @@ void initNet()
     /*}*/
     /*core_forward(players, 2, 0.01);*/
 
-    /*destory_convlayer(players[1].pconvlayer);*/
+    destory_convlayer(players[1].pconvlayer);
     destory_inputlayer(players[0].pinputlayer);
     /*SAFEFREE(players[1]->pconv_filter);*/
 }

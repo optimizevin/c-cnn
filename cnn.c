@@ -51,7 +51,7 @@ inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
 {
     const uint32_t nsize = width * height * batch * sizeof(float_t);
     assert(nsize > 0);
-    float_t *pret = (float_t*)calloc(nsize*sizeof(float_t), 1);
+    float_t *pret = (float_t*)calloc(nsize * sizeof(float_t), 1);
     for(uint32_t  i = 0; i < nsize; i++) {
         pret[i] =  generateGaussianNoise(0.f, stddev);
     }
@@ -90,37 +90,18 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, ui
     }
 }
 
-inline  void conv2d_withlayer(float_t *pOut)
+inline  void conv2d_withlayer(float_t *pneu, uint32_t data_height, uint32_t data_width,
+                              struct conv_layer *pconv_layer)
 {
-    /*uint32_t  data_width =  player->in_width;*/
-    /*uint32_t  data_height = player->in_height;*/
-
-    /*uint32_t  fl_width =  player->pconv_filter->in_width;*/
-    /*uint32_t  fl_height = player->pconv_filter->in_height;*/
-
-    /*float_t *pData = player->neu;*/
-    /*float_t *filter = player->pconv_filter->filter_core;*/
-
-    /*float_t (*pImg)[data_height][data_width] =*/
-    /*(float_t(*)[data_height][data_width])pData;*/
-    /*float_t (*pfilter)[fl_height][fl_width] =*/
-    /*(float_t(*)[fl_height][fl_width])filter;*/
-
-    /*float_t tmp = 0.f;*/
-    /*const uint32_t  nbox_height = data_height - fl_height + 1;*/
-    /*const uint32_t  nbox_width = data_width - fl_width + 1;*/
-
-    /*for(uint32_t ida = 0; ida < nbox_height; ida++) {*/
-    /*for(uint32_t jda = 0; jda < nbox_width; jda++) {*/
-    /*tmp =  0.f;*/
-    /*for(uint32_t fda = 0; fda < fl_height; fda++) {*/
-    /*for(uint32_t fdj = 0; fdj < fl_width; fdj++) {*/
-    /*tmp += (*pImg)[ida + fda][jda + fdj] * (*pfilter)[fda][fdj];*/
-    /*}*/
-    /*}*/
-    /*(*(float_t(*)[][nbox_width])pOut)[ida][jda] = tmp;*/
-    /*}*/
-    /*}*/
+    assert(pneu != NULL);
+    if(pconv_layer->pout ==NULL){
+        uint32_t width = data_width - pconv_layer->fl_width +1;
+        uint32_t height = data_height- pconv_layer->fl_height +1;
+        pconv_layer->pout = (float_t*)calloc(width*height*pconv_layer->fl_batch*sizeof(float_t),1);
+    }
+    
+    conv2d_withonefilter(pneu, data_height, data_width, pconv_layer->filter_core,
+                         pconv_layer->fl_height, pconv_layer->fl_width, pconv_layer->pout);
 }
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t width, uint32_t height,
@@ -130,16 +111,18 @@ struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, ui
     struct input_layer* ret = NULL;
     const uint32_t fullsize = width * height * batch;
 
-    ret = (struct input_layer*)calloc(sizeof(ret),1);
+    ret = (struct input_layer*)calloc(sizeof(struct input_layer), 1);
     ret->base.laytype = LAY_INPUT;
     strcpy(ret->base.layerName, pstr);
     ret->in_width = width;
     ret->in_height = height;
     ret->bias = bias;
     ret->nenum = fullsize;
-    ret->neu = (float_t*)calloc(fullsize*sizeof(float_t), 1);
-    memcpy(ret->neu, pdata, fullsize);
-    ret->weight = (float_t*)calloc(fullsize*sizeof(float_t), 1);
+
+    ret->neu = (float_t*)calloc(fullsize * sizeof(float_t), 1);
+    memcpy(ret->neu, pdata, fullsize*sizeof(float_t));
+
+    ret->weight = (float_t*)calloc(fullsize * sizeof(float_t), 1);
     for(uint32_t i = 0; i < fullsize; i++) {
         ret->weight[i] = generateGaussianNoise(0.f, stddev);
     }
@@ -161,10 +144,10 @@ void destory_inputlayer(struct input_layer* pinput_layer)
 struct conv_layer* create_convlayer(const char* pstr, uint32_t width, uint32_t height, uint32_t batch,
                                     float_t bias, float_t stddev)
 {
-    struct conv_layer* ret = (struct conv_layer*)calloc(sizeof(ret),1);
+    struct conv_layer* ret = (struct conv_layer*)calloc(sizeof(ret), 1);
     ret->fl_width = width;
     ret->fl_height = height;
-    ret->filter_batch = batch;
+    ret->fl_batch = batch;
     ret->bias = bias;
     ret->filter_core = create_filtercore(batch, width, height, stddev);
     return ret;

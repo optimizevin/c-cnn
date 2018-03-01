@@ -82,11 +82,12 @@ struct input_layer {
 
 struct conv_layer {
     struct base_layer base;
-    uint32_t  filter_batch;
+    uint32_t  fl_batch;
     uint32_t  fl_height;
     uint32_t  fl_width;
     float_t   bias;
     float_t   *filter_core;
+    float_t   *pout;
 };
 
 union store_layer {
@@ -97,7 +98,8 @@ union store_layer {
 
 inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, uint32_t data_width,
                                   float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut);
-inline  void conv2d_withlayer(float_t *pOut);
+inline  void conv2d_withlayer(float_t *pneu, uint32_t data_height, uint32_t data_width,
+                              struct conv_layer *pconv_layer);
 
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t width, uint32_t height,
@@ -107,8 +109,5 @@ struct conv_layer* create_convlayer(const char* pstr, uint32_t width, uint32_t h
 
 void destory_convlayer(struct conv_layer* pconv_layer);
 void destory_inputlayer(struct input_layer* pinput_layer);
-
-//inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
-                                  //const uint32_t height,  const float_t stddev);
 
 

@@ -10,7 +10,7 @@ t: $(tobj)
 nncomm.o: nncomm.h nncomm.c
 mnist.o : mnist.h mnist.c 
 t.o : t.c 
-cnn.o : cnn.h cnn.c 
+cnn.o : cnn.h cnn.c
 
 .PHONY : clean 
 clean : 

@@ -127,6 +127,16 @@ void initNet()
 
     conv2d_withlayer(players[0].pinputlayer->neu,28,28,players[1].pconvlayer);
 
+    for(int i = 0; i < 23; i++) {
+        for(int j = 0; j < 23; j++) {
+            float_t(*p)[][23] = (float_t(*)[][23])players[1].pconvlayer->pout;
+            printf("%0.3f\t", (*p)[i][j]);
+            /*printf("%0.3f",pOut[i*j+j]);*/
+        }
+        printf("\n");
+    }
+    return ;
+
     /*players[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);*/
     /*players[1] = makelayer("conv1", 8, 6, 6, 0.5, 0.8, LAY_CONV);*/
     /*players[2] = makelayer("s2",2,2,1,0.5,0.8,LAY_POOL);*/

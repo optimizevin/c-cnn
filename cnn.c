@@ -144,7 +144,7 @@ void destory_inputlayer(struct input_layer* pinput_layer)
 struct conv_layer* create_convlayer(const char* pstr, uint32_t width, uint32_t height, uint32_t batch,
                                     float_t bias, float_t stddev)
 {
-    struct conv_layer* ret = (struct conv_layer*)calloc(sizeof(ret), 1);
+    struct conv_layer* ret = (struct conv_layer*)calloc(sizeof(struct conv_layer), 1);
     ret->fl_width = width;
     ret->fl_height = height;
     ret->fl_batch = batch;

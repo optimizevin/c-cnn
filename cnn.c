@@ -45,6 +45,18 @@
 #include <memory.h>
 #include <math.h>
 
+void logpr(float_t* fd,int dept)
+{
+    const  int DEPT = dept;
+    float_t *pdata = fd+(28*28*59999);
+    for(int i = 0; i < DEPT; i++) {
+        for(int j = 0; j < DEPT; j++) {
+            float_t(*p)[][DEPT] = (float_t(*)[][DEPT])pdata;
+            printf("%05.1f ", (*p)[i][j]);
+        }
+        printf("\n");
+    }
+}
 
 inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
                                   const uint32_t height,  const float_t stddev)
@@ -120,7 +132,9 @@ struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, ui
     ret->nenum = fullsize;
 
     ret->neu = (float_t*)calloc(fullsize * sizeof(float_t), 1);
-    memcpy(ret->neu, pdata, fullsize*sizeof(float_t));
+    for(uint32_t i=0;i<fullsize;i++){
+        ret->neu[i] = (float_t)pdata[i];
+    }
 
     ret->weight = (float_t*)calloc(fullsize * sizeof(float_t), 1);
     for(uint32_t i = 0; i < fullsize; i++) {

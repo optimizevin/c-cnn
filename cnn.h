@@ -95,6 +95,7 @@ union store_layer {
     struct conv_layer*  pconvlayer;
 };
 
+void logpr(float_t* fd,int dept);
 
 inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, uint32_t data_width,
                                   float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut);

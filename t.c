@@ -110,7 +110,7 @@ int test()
 
 }
 
-uint32_t *pint_img  =  NULL;
+float_t *pint_img  =  NULL;
 uint32_t *pint_label  =  NULL;
 
 void loadall()
@@ -125,16 +125,11 @@ void initNet()
     players[0].pinputlayer = create_inputlayer("input", (float_t*)pint_img, 28, 28, 1 , 0.5, 0.8);
     players[1].pconvlayer = create_convlayer("conv1", 6, 6, 8, 0.5, 0.8);
 
-    conv2d_withlayer(players[0].pinputlayer->neu,28,28,players[1].pconvlayer);
-
-    for(int i = 0; i < 23; i++) {
-        for(int j = 0; j < 23; j++) {
-            float_t(*p)[][23] = (float_t(*)[][23])players[1].pconvlayer->pout;
-            printf("%0.3f\t", (*p)[i][j]);
-            /*printf("%0.3f",pOut[i*j+j]);*/
-        }
-        printf("\n");
-    }
+    conv2d_withlayer(players[0].pinputlayer->neu, 28, 28, players[1].pconvlayer);
+    
+    logpr(pint_img,28);
+    /*logpr(players[0].pinputlayer->neu,28);*/
+    /*logpr(players[1].pconvlayer->pout,23);*/
     return ;
 
     /*players[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);*/

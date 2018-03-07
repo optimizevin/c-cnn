@@ -47,6 +47,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <float.h>
 #include <memory.h>
 
 #define sigmoid_exp fastexp
@@ -72,9 +73,9 @@ inline float_t fastexp(float_t x)
     return sum;
 }
 
-
 inline float_t generateGaussianNoise(const float_t mean, const float_t stdDev)
 {
+
     static int hasSpare = 0;
     static float_t spare;
 
@@ -214,15 +215,15 @@ inline  void ave_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_
                     tmp +=  pSrc[ip + i][jp + j];
                 }
             }
-            tmp /= pool_size*pool_size;
+            tmp /= pool_size * pool_size;
             pOut[i][j] =  tmp;
         }
     }
 }
 
-inline void subsampling_fun(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, pFun_Pooll pfunpool,float_t*pout)
+inline void subsampling_fun(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, pFun_Pooll pfunpool, float_t*pout)
 {
-    pfunpool(src,rows,cols,pool_size,pout);
+    pfunpool(src, rows, cols, pool_size, pout);
 }
 
 
@@ -303,11 +304,11 @@ inline void softMax_cross_entropy_with_logits(const float_t *labels, const float
        decay: float_t = 0. Learning rate decay over each update.
        nesterov: bool =  false
 ************************************************/
-inline void SGD_Momentum(const float_t *W,const uint32_t len,const float_t lr, const float_t momentum,
+inline void SGD_Momentum(const float_t *W, const uint32_t len, const float_t lr, const float_t momentum,
                          const float_t decay, const int nesterov)
 {
-   for(uint32_t i=0;i<len;i++){
-   } 
+    for(uint32_t i = 0; i < len; i++) {
+    }
 }
 
 

@@ -62,6 +62,15 @@
 
 int test()
 {
+    /*for(int i=0;i<100;i++){*/
+        /*float_t sigf = generateGaussianNoise(0.5,0.8f);*/
+        /*[>if(sigf>1.f || sigf < -1.f)<]*/
+            /*printf("%5.3f\n",sigf);*/
+    /*}*/
+
+    /*return 0;*/
+
+
     float_t sigf = 1.105905967;
     printf("sigmoid %.8f\n", sigmoid(sigf));
 
@@ -122,14 +131,15 @@ void loadall()
 void initNet()
 {
     union store_layer players[8];
-    players[0].pinputlayer = create_inputlayer("input", (float_t*)pint_img, 28, 28, 1 , 0.5, 0.8);
-    players[1].pconvlayer = create_convlayer("conv1", 6, 6, 8, 0.5, 0.8);
+    players[0].pinputlayer = create_inputlayer("input", pint_img, 28, 28, 20 , 0.5, 0.8);
+    /*players[1].pconvlayer = create_convlayer("conv1", 6, 6, 8, 0.5, 0.8);*/
+    players[1].pconvlayer = create_convlayer("conv1", 2, 2, 8, 0.5, 0.8);
 
     conv2d_withlayer(players[0].pinputlayer->neu, 28, 28, players[1].pconvlayer);
     
-    logpr(pint_img,28);
+    /*logpr(pint_img,28);*/
     /*logpr(players[0].pinputlayer->neu,28);*/
-    /*logpr(players[1].pconvlayer->pout,23);*/
+    /*logpr(players[1].pconvlayer->pout,23,1);*/
     return ;
 
     /*players[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);*/

@@ -45,14 +45,14 @@
 #include <memory.h>
 #include <math.h>
 
-void logpr(float_t* fd,int dept)
+void logpr(float_t* fd, int32_t size, int32_t dept)
 {
     const  int DEPT = dept;
-    float_t *pdata = fd+(28*28*59999);
+    float_t *pdata = fd + (size * size * dept);
     for(int i = 0; i < DEPT; i++) {
         for(int j = 0; j < DEPT; j++) {
             float_t(*p)[][DEPT] = (float_t(*)[][DEPT])pdata;
-            printf("%05.1f ", (*p)[i][j]);
+            printf("%05.3f ", (*p)[i][j]);
         }
         printf("\n");
     }
@@ -65,7 +65,8 @@ inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
     assert(nsize > 0);
     float_t *pret = (float_t*)calloc(nsize * sizeof(float_t), 1);
     for(uint32_t  i = 0; i < nsize; i++) {
-        pret[i] =  generateGaussianNoise(0.f, stddev);
+        pret[i] =  generateGaussianNoise(0.5f, 0.8f);
+        /*printf("%5.3f \n",pret[i]);*/
     }
     return pret;
 }
@@ -85,6 +86,7 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, ui
     float_t (*pfilter)[fl_height][fl_width] =
         (float_t(*)[fl_height][fl_width])filter;
 
+
     float_t tmp = 0.f;
     const uint32_t  nbox_height = data_height - fl_height + 1;
     const uint32_t  nbox_width = data_width - fl_width + 1;
@@ -98,6 +100,7 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, ui
                 }
             }
             (*(float_t(*)[][nbox_width])pOut)[ida][jda] = tmp;
+            /*printf("%3.2f ",(*(float_t(*)[][nbox_width])pOut)[ida][jda]);*/
         }
     }
 }
@@ -106,14 +109,36 @@ inline  void conv2d_withlayer(float_t *pneu, uint32_t data_height, uint32_t data
                               struct conv_layer *pconv_layer)
 {
     assert(pneu != NULL);
-    if(pconv_layer->pout ==NULL){
-        uint32_t width = data_width - pconv_layer->fl_width +1;
-        uint32_t height = data_height- pconv_layer->fl_height +1;
-        pconv_layer->pout = (float_t*)calloc(width*height*pconv_layer->fl_batch*sizeof(float_t),1);
+    if(pconv_layer->pout == NULL) {
+        uint32_t width = data_width - pconv_layer->fl_width + 1;
+        uint32_t height = data_height - pconv_layer->fl_height + 1;
+        pconv_layer->pout = (float_t*)calloc(width * height * pconv_layer->fl_batch * sizeof(float_t), 1);
     }
-    
-    conv2d_withonefilter(pneu, data_height, data_width, pconv_layer->filter_core,
-                         pconv_layer->fl_height, pconv_layer->fl_width, pconv_layer->pout);
+
+    float_t (*pfilter)[pconv_layer->fl_height][pconv_layer->fl_width] =
+        (float_t(*)[pconv_layer->fl_height][pconv_layer->fl_width])pconv_layer->filter_core;
+
+    float_t (*pout)[pconv_layer->fl_height][pconv_layer->fl_width] =
+        (float_t(*)[pconv_layer->fl_height][pconv_layer->fl_width])pconv_layer->pout;
+
+    for(uint32_t i = 0; i < pconv_layer->fl_batch; i++) {
+        conv2d_withonefilter(pneu, data_height, data_width, (float_t*)pfilter,
+                             pconv_layer->fl_height, pconv_layer->fl_width,(float_t*)pout);
+        pfilter++;
+        pout++;
+        /*printf("\n+++++++++++++++++++++++\n\n");*/
+    }
+
+    /*for(uint32_t i = 0; i < pconv_layer->fl_batch; i++) {*/
+        /*for(int ki = 0; ki < pconv_layer->fl_width; ki++) {*/
+            /*for(int kj = 0; kj < pconv_layer->fl_width; kj++) {*/
+                /*printf("%3.2f ", (*pfilter)[ki][kj]);*/
+            /*}*/
+            /*pfilter++;*/
+            /*printf("\n");*/
+        /*}*/
+        /*printf("---------------------\n");*/
+    /*}*/
 }
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t width, uint32_t height,
@@ -132,8 +157,8 @@ struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, ui
     ret->nenum = fullsize;
 
     ret->neu = (float_t*)calloc(fullsize * sizeof(float_t), 1);
-    for(uint32_t i=0;i<fullsize;i++){
-        ret->neu[i] = (float_t)pdata[i];
+    for(uint32_t i = 0; i < fullsize; i++) {
+        ret->neu[i] = pdata[i];
     }
 
     ret->weight = (float_t*)calloc(fullsize * sizeof(float_t), 1);
@@ -164,6 +189,7 @@ struct conv_layer* create_convlayer(const char* pstr, uint32_t width, uint32_t h
     ret->fl_batch = batch;
     ret->bias = bias;
     ret->filter_core = create_filtercore(batch, width, height, stddev);
+
     return ret;
 }
 

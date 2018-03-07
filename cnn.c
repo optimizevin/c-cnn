@@ -47,12 +47,11 @@
 
 void logpr(float_t* fd, int32_t size, int32_t dept)
 {
-    const  int DEPT = dept;
     float_t *pdata = fd + (size * size * dept);
-    for(int i = 0; i < DEPT; i++) {
-        for(int j = 0; j < DEPT; j++) {
-            float_t(*p)[][DEPT] = (float_t(*)[][DEPT])pdata;
-            printf("%05.3f ", (*p)[i][j]);
+    float_t(*p)[][size] = (float_t(*)[][size])pdata;
+    for(int i = 0; i < size; i++) {
+        for(int j = 0; j < size; j++) {
+            printf("%3.1f ", (*p)[i][j]);
         }
         printf("\n");
     }
@@ -100,7 +99,6 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, ui
                 }
             }
             (*(float_t(*)[][nbox_width])pOut)[ida][jda] = tmp;
-            /*printf("%3.2f ",(*(float_t(*)[][nbox_width])pOut)[ida][jda]);*/
         }
     }
 }
@@ -118,27 +116,18 @@ inline  void conv2d_withlayer(float_t *pneu, uint32_t data_height, uint32_t data
     float_t (*pfilter)[pconv_layer->fl_height][pconv_layer->fl_width] =
         (float_t(*)[pconv_layer->fl_height][pconv_layer->fl_width])pconv_layer->filter_core;
 
-    float_t (*pout)[pconv_layer->fl_height][pconv_layer->fl_width] =
-        (float_t(*)[pconv_layer->fl_height][pconv_layer->fl_width])pconv_layer->pout;
+    const uint32_t  nbox_height = data_height - pconv_layer->fl_height + 1;
+    const uint32_t  nbox_width = data_width - pconv_layer->fl_width + 1;
+
+    float_t (*pout)[nbox_height][nbox_width] =
+        (float_t(*)[nbox_height][nbox_width])pconv_layer->pout;
 
     for(uint32_t i = 0; i < pconv_layer->fl_batch; i++) {
         conv2d_withonefilter(pneu, data_height, data_width, (float_t*)pfilter,
-                             pconv_layer->fl_height, pconv_layer->fl_width,(float_t*)pout);
+                             pconv_layer->fl_height, pconv_layer->fl_width, (float_t*)pout);
         pfilter++;
         pout++;
-        /*printf("\n+++++++++++++++++++++++\n\n");*/
     }
-
-    /*for(uint32_t i = 0; i < pconv_layer->fl_batch; i++) {*/
-        /*for(int ki = 0; ki < pconv_layer->fl_width; ki++) {*/
-            /*for(int kj = 0; kj < pconv_layer->fl_width; kj++) {*/
-                /*printf("%3.2f ", (*pfilter)[ki][kj]);*/
-            /*}*/
-            /*pfilter++;*/
-            /*printf("\n");*/
-        /*}*/
-        /*printf("---------------------\n");*/
-    /*}*/
 }
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t width, uint32_t height,

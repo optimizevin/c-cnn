@@ -63,9 +63,9 @@
 int test()
 {
     /*for(int i=0;i<100;i++){*/
-        /*float_t sigf = generateGaussianNoise(0.5,0.8f);*/
-        /*[>if(sigf>1.f || sigf < -1.f)<]*/
-            /*printf("%5.3f\n",sigf);*/
+    /*float_t sigf = generateGaussianNoise(0.5,0.8f);*/
+    /*[>if(sigf>1.f || sigf < -1.f)<]*/
+    /*printf("%5.3f\n",sigf);*/
     /*}*/
 
     /*return 0;*/
@@ -136,10 +136,10 @@ void initNet()
     players[1].pconvlayer = create_convlayer("conv1", 2, 2, 8, 0.5, 0.8);
 
     conv2d_withlayer(players[0].pinputlayer->neu, 28, 28, players[1].pconvlayer);
-    
+
     /*logpr(pint_img,28);*/
     /*logpr(players[0].pinputlayer->neu,28);*/
-    /*logpr(players[1].pconvlayer->pout,23,1);*/
+    logpr(players[1].pconvlayer->pout, 27, 7);
     return ;
 
     /*players[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);*/

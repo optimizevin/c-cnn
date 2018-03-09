@@ -24,49 +24,6 @@ static inline int reverseInt(int i)
 }
 
 
-/*uint32_t erloadMnistImg(const char* filename, float_t **p)*/
-/*{*/
-    /*FILE *fp = fopen(filename, "rb");*/
-    /*if (NULL == fp) {*/
-        /*printf("load file:%s faile\n", filename);*/
-        /*return 0;*/
-    /*}*/
-    /*struct stat st;*/
-    /*stat(filename, &st);*/
-    /*uint32_t fileSize =  st.st_size;*/
-    /*assert(fileSize > 0);*/
-    /*struct mnist_pixel_file *pmnistpf = (struct mnist_pixel_file *)calloc(fileSize, 1);*/
-    /*fread(pmnistpf, sizeof(struct mnist_pixel_file) , 1, fp);*/
-
-    /*pmnistpf->num =  reverseInt(pmnistpf->num);*/
-    /*pmnistpf->num_rows =  reverseInt(pmnistpf->num_rows);*/
-    /*printf("rows:%d\n", pmnistpf->num_rows);*/
-    /*pmnistpf->num_cols =  reverseInt(pmnistpf->num_cols);*/
-    /*printf("cols:%d\n", pmnistpf->num_cols);*/
-    /*uint32_t batch = pmnistpf->num;*/
-    /*uint32_t count =  pmnistpf->num * pmnistpf->num_rows * pmnistpf->num_cols;*/
-
-    /*float_t *pfloat = (float_t*)calloc(count, sizeof(float_t));*/
-
-    /*float_t(*ptmp)[][28] = (float_t(*)[][28])pfloat;*/
-    /*for(int num = 0; num < batch; num++) {*/
-        /*for(int rows = 0; rows < pmnistpf->num_rows; rows++) {*/
-            /*for(int cols = 0; cols < pmnistpf->num_cols; cols++) {*/
-                /*unsigned char tmp = '0';*/
-                /*fread(&tmp, sizeof(unsigned char), 1, fp);*/
-                /*(*ptmp)[rows][cols] = (float_t)tmp;*/
-                /*[>printf("%05.1f ", (*ptmp)[rows][cols]);<]*/
-            /*}*/
-            /*[>printf("\n");<]*/
-        /*}*/
-    /*}*/
-
-    /*fclose(fp);*/
-    /*free(pmnistpf);*/
-    /**p = pfloat;*/
-    /*return batch;*/
-/*}*/
-
 
 uint32_t loadMnistImg(const char* filename, float_t **p)
 {

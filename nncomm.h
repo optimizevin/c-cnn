@@ -79,8 +79,10 @@ inline void float_tMatrixMutiply(const float_t *a, const float_t *b, float_t *c,
         uint32_t arow, uint32_t acol, uint32_t bcol);
 inline float_t *MatrixAdd(const float_t *a, const float_t *b, uint32_t r, uint32_t c);
 
-inline void max_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float_t*pout);
-inline  void ave_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float_t*pout);
+inline void max_pool(const float_t*pData, uint32_t data_rows, uint32_t data_cols,
+                     uint32_t pl_rows , uint32_t pl_cols, uint32_t stride, float_t * pout);
+inline void ave_pool(const float_t*pData, uint32_t data_rows, uint32_t data_cols,
+                     uint32_t pl_rows , uint32_t pl_cols, uint32_t stride, float_t * pout);
 
 inline void subsampling_fun(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, pFun_Pooll pfunpool,float_t*pout);
 

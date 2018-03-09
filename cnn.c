@@ -44,23 +44,24 @@
 #include <stdio.h>
 #include <memory.h>
 #include <math.h>
+#include <float.h>
 
-void logpr(float_t* fd, int32_t size, int32_t dept)
+void logpr(float_t* fd, int32_t rows, int32_t cols, int32_t dept)
 {
-    float_t *pdata = fd + (size * size * dept);
-    float_t(*p)[][size] = (float_t(*)[][size])pdata;
-    for(int i = 0; i < size; i++) {
-        for(int j = 0; j < size; j++) {
+    float_t *pdata = fd + (rows * cols * dept);
+    float_t(*p)[][cols] = (float_t(*)[][cols])pdata;
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
             printf("%3.1f ", (*p)[i][j]);
         }
         printf("\n");
     }
 }
 
-inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
-                                  const uint32_t height,  const float_t stddev)
+inline float_t *create_filtercore(const uint32_t batch, const uint32_t cols,
+                                  const uint32_t rows,  const float_t stddev)
 {
-    const uint32_t nsize = width * height * batch * sizeof(float_t);
+    const uint32_t nsize = cols * rows * batch * sizeof(float_t);
     assert(nsize > 0);
     float_t *pret = (float_t*)calloc(nsize * sizeof(float_t), 1);
     for(uint32_t  i = 0; i < nsize; i++) {
@@ -77,71 +78,110 @@ inline float_t *create_filtercore(const uint32_t batch, const uint32_t width,
 
 /* 0.6 0.8 1.0*/
 /* 1.4 1.6 1.8*/
-inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, uint32_t data_width,
-                                  float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut)
+inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_rows, uint32_t data_cols,
+                                  float_t *filter, uint32_t fl_rows, uint32_t fl_cols, float_t bias, float_t *pOut)
 {
-    float_t (*pImg)[data_height][data_width] =
-        (float_t(*)[data_height][data_width])pData;
-    float_t (*pfilter)[fl_height][fl_width] =
-        (float_t(*)[fl_height][fl_width])filter;
+    float_t (*pImg)[data_rows][data_cols] =
+        (float_t(*)[data_rows][data_cols])pData;
+    float_t (*pfilter)[fl_rows][fl_cols] =
+        (float_t(*)[fl_rows][fl_cols])filter;
 
 
     float_t tmp = 0.f;
-    const uint32_t  nbox_height = data_height - fl_height + 1;
-    const uint32_t  nbox_width = data_width - fl_width + 1;
+    const uint32_t  nbox_rows = data_rows - fl_rows + 1;
+    const uint32_t  nbox_cols = data_cols - fl_cols + 1;
 
-    for(uint32_t ida = 0; ida < nbox_height; ida++) {
-        for(uint32_t jda = 0; jda < nbox_width; jda++) {
+    for(uint32_t ida = 0; ida < nbox_rows; ida++) {
+        for(uint32_t jda = 0; jda < nbox_cols; jda++) {
             tmp =  0.f;
-            for(uint32_t fda = 0; fda < fl_height; fda++) {
-                for(uint32_t fdj = 0; fdj < fl_width; fdj++) {
+            for(uint32_t fda = 0; fda < fl_rows; fda++) {
+                for(uint32_t fdj = 0; fdj < fl_cols; fdj++) {
                     tmp += (*pImg)[ida + fda][jda + fdj] * (*pfilter)[fda][fdj];
                 }
             }
-            (*(float_t(*)[][nbox_width])pOut)[ida][jda] = tmp;
+            tmp += bias;
+            (*(float_t(*)[][nbox_cols])pOut)[ida][jda] = tmp;
         }
     }
 }
 
-inline  void conv2d_withlayer(float_t *pneu, uint32_t data_height, uint32_t data_width,
+inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_cols,
                               struct conv_layer *pconv_layer)
 {
     assert(pneu != NULL);
     if(pconv_layer->pout == NULL) {
-        uint32_t width = data_width - pconv_layer->fl_width + 1;
-        uint32_t height = data_height - pconv_layer->fl_height + 1;
-        pconv_layer->pout = (float_t*)calloc(width * height * pconv_layer->fl_batch * sizeof(float_t), 1);
+        uint32_t cols = data_cols - pconv_layer->fl_cols + 1;
+        uint32_t rows = data_rows - pconv_layer->fl_rows + 1;
+        pconv_layer->pout = (float_t*)calloc(cols * rows * pconv_layer->fl_batch * sizeof(float_t), 1);
     }
 
-    float_t (*pfilter)[pconv_layer->fl_height][pconv_layer->fl_width] =
-        (float_t(*)[pconv_layer->fl_height][pconv_layer->fl_width])pconv_layer->filter_core;
+    float_t (*pfilter)[pconv_layer->fl_rows][pconv_layer->fl_cols] =
+        (float_t(*)[pconv_layer->fl_rows][pconv_layer->fl_cols])pconv_layer->filter_core;
 
-    const uint32_t  nbox_height = data_height - pconv_layer->fl_height + 1;
-    const uint32_t  nbox_width = data_width - pconv_layer->fl_width + 1;
+    const uint32_t  nbox_rows = data_rows - pconv_layer->fl_rows + 1;
+    const uint32_t  nbox_cols = data_cols - pconv_layer->fl_cols + 1;
 
-    float_t (*pout)[nbox_height][nbox_width] =
-        (float_t(*)[nbox_height][nbox_width])pconv_layer->pout;
+    pconv_layer->out_rows = nbox_rows;
+    pconv_layer->out_cols = nbox_cols;
+
+    float_t (*pout)[nbox_rows][nbox_cols] =
+        (float_t(*)[nbox_rows][nbox_cols])pconv_layer->pout;
 
     for(uint32_t i = 0; i < pconv_layer->fl_batch; i++) {
-        conv2d_withonefilter(pneu, data_height, data_width, (float_t*)pfilter,
-                             pconv_layer->fl_height, pconv_layer->fl_width, (float_t*)pout);
+        conv2d_withonefilter(pneu, data_rows, data_cols, (float_t*)pfilter,
+                             pconv_layer->fl_rows, pconv_layer->fl_cols, pconv_layer->bias, (float_t*)pout);
         pfilter++;
         pout++;
     }
 }
 
-struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t width, uint32_t height,
+
+//Max Pool
+inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t data_cols, uint32_t batch,
+                           struct pool_layer *ppool_layer, uint32_t  stride)
+{
+    assert(ppool_layer);
+
+    if(ppool_layer->poolout) {
+        free(ppool_layer->poolout);
+        ppool_layer->poolout =  NULL;
+    }
+    uint32_t  out_rows = 0;
+    uint32_t  out_cols = 0;
+    for(uint32_t step = 0; step <= (data_rows - stride) ; step += stride) {
+        out_rows++;
+    }
+    for(uint32_t step = 0; step <= (data_cols - stride) ; step += stride) {
+        out_cols++;
+    }
+
+    /*printf("r:%d\tc%d\ts:%d\n", out_rows, out_cols, stride);*/
+
+    ppool_layer->out_rows = out_rows;
+    ppool_layer->out_cols = out_cols;
+
+    ppool_layer->poolout = (float_t*)calloc(out_rows * out_cols * batch , 1);
+    for(uint32_t i = 0; i < batch; i++) {
+        uint32_t offset = out_rows * out_cols * i;
+        max_pool(pData + offset, data_rows, data_cols, ppool_layer->pl_rows,
+                 ppool_layer->pl_cols, stride, ppool_layer->poolout);
+    }
+
+}
+
+
+struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t cols, uint32_t rows,
                                       const uint32_t batch, float_t bias, float_t stddev)
 {
     assert(pdata != NULL);
     struct input_layer* ret = NULL;
-    const uint32_t fullsize = width * height * batch;
+    const uint32_t fullsize = cols * rows * batch;
 
     ret = (struct input_layer*)calloc(sizeof(struct input_layer), 1);
     ret->base.laytype = LAY_INPUT;
     strcpy(ret->base.layerName, pstr);
-    ret->in_width = width;
-    ret->in_height = height;
+    ret->in_cols = cols;
+    ret->in_rows = rows;
     ret->bias = bias;
     ret->nenum = fullsize;
 
@@ -169,15 +209,17 @@ void destory_inputlayer(struct input_layer* pinput_layer)
 }
 
 
-struct conv_layer* create_convlayer(const char* pstr, uint32_t width, uint32_t height, uint32_t batch,
+struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t rows, uint32_t batch,
                                     float_t bias, float_t stddev)
 {
     struct conv_layer* ret = (struct conv_layer*)calloc(sizeof(struct conv_layer), 1);
-    ret->fl_width = width;
-    ret->fl_height = height;
+    ret->base.laytype = LAY_CONV;
+    strcpy(ret->base.layerName, pstr);
+    ret->fl_rows = rows;
+    ret->fl_cols = cols;
     ret->fl_batch = batch;
     ret->bias = bias;
-    ret->filter_core = create_filtercore(batch, width, height, stddev);
+    ret->filter_core = create_filtercore(batch, cols, rows, stddev);
 
     return ret;
 }
@@ -188,5 +230,23 @@ void destory_convlayer(struct conv_layer* pconv_layer)
         free(pconv_layer->filter_core);
     }
     free(pconv_layer);
+}
+
+struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t rows)
+{
+    struct pool_layer* ret = (struct pool_layer*)calloc(sizeof(struct pool_layer), 1);
+    ret->base.laytype = LAY_POOL;
+    strcpy(ret->base.layerName, pstr);
+    ret->pl_rows = rows;
+    ret->pl_cols = cols;
+    return ret;
+}
+
+void destory_poollayer(struct pool_layer* pool_layer)
+{
+    if(pool_layer->poolout) {
+        free(pool_layer->poolout);
+    }
+    free(pool_layer);
 }
 

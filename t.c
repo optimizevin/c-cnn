@@ -83,7 +83,7 @@ int test()
     float_t*pOut = NULL;
     pOut = (float_t*)calloc(2 * 3, sizeof(float_t));
 
-    conv2d_withonefilter(b, 3, 4, f, 2, 2, pOut);
+    conv2d_withonefilter(b, 3, 4, f, 2, 2, 0.5f, pOut);
 
     for(int i = 0; i < 2; i++) {
         for(int j = 0; j < 3; j++) {
@@ -119,6 +119,18 @@ int test()
 
 }
 
+void t2()
+{
+    float_t b[] = {
+        1.f, 2.f, 3.f, 4.f,
+        5.f, 6.f, 7.f, 8.f,
+        9.f, 10.f, 11.f, 12.f,
+        13.f, 14.f, 15.f, 16.f
+    };
+    float_t out[64] = {0};
+    max_pool(b, 4, 4, 2, 2, 2, out);
+}
+
 float_t *pint_img  =  NULL;
 uint32_t *pint_label  =  NULL;
 
@@ -131,15 +143,36 @@ void loadall()
 void initNet()
 {
     union store_layer players[8];
+#define  CONVERLAYER_1_BATCH  8
+#define  MAX_POOL_STRIDE  2
+
     players[0].pinputlayer = create_inputlayer("input", pint_img, 28, 28, 20 , 0.5, 0.8);
-    /*players[1].pconvlayer = create_convlayer("conv1", 6, 6, 8, 0.5, 0.8);*/
-    players[1].pconvlayer = create_convlayer("conv1", 2, 2, 8, 0.5, 0.8);
+    players[1].pconvlayer = create_convlayer("conv1", 7, 7, CONVERLAYER_1_BATCH,0.5, 0.8);
+    /*28-7+1 = 22*/
+    players[2].ppool_layer = create_poollayer("pool", 2, 2);
 
+    /*players[1].pconvlayer = create_convlayer("conv1", 2, 2, 8, 0.5, 0.8);*/
     conv2d_withlayer(players[0].pinputlayer->neu, 28, 28, players[1].pconvlayer);
+    /*printf("conv rows:%d\tconv cols:%d\n",*/
+                   /*players[1].pconvlayer->out_rows,*/
+                   /*players[1].pconvlayer->out_cols);*/
 
-    /*logpr(pint_img,28);*/
-    /*logpr(players[0].pinputlayer->neu,28);*/
-    logpr(players[1].pconvlayer->pout, 27, 7);
+    pool_withlayer(players[1].pconvlayer->pout,
+                   players[1].pconvlayer->out_rows,
+                   players[1].pconvlayer->out_cols,
+                   players[1].pconvlayer->fl_batch,
+                   players[2].ppool_layer, MAX_POOL_STRIDE );
+
+    /*printf("pool rows:%d\tpool cols:%d\n",*/
+          /*players[2].ppool_layer->out_rows,*/
+          /*players[2].ppool_layer->out_cols);*/
+
+    logpr(players[2].ppool_layer->poolout,
+          players[2].ppool_layer->out_rows,
+          players[2].ppool_layer->out_cols, 0);
+    /*logpr(pint_img,28,28,0);*/
+    /*logpr(players[0].pinputlayer->neu,28,28,0);*/
+    /*logpr(players[1].pconvlayer->pout, 22,22, 7);*/
     return ;
 
     /*players[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);*/
@@ -160,6 +193,7 @@ void initNet()
     /*}*/
     /*core_forward(players, 2, 0.01);*/
 
+    destory_poollayer(players[2].ppool_layer);
     destory_convlayer(players[1].pconvlayer);
     destory_inputlayer(players[0].pinputlayer);
     /*SAFEFREE(players[1]->pconv_filter);*/

@@ -50,8 +50,8 @@
 #define  NAME_LENGTH  128
 
 struct output_block {
-    uint32_t  in_height;
-    uint32_t  in_width;
+    uint32_t  in_rows;
+    uint32_t  in_cols;
     float_t   data[0];
 };
 
@@ -73,8 +73,8 @@ struct base_layer {
 struct input_layer {
     struct base_layer base;
     uint32_t nenum;
-    uint32_t  in_height;
-    uint32_t  in_width;
+    uint32_t  in_rows;
+    uint32_t  in_cols;
     float_t bias;
     float_t *neu;
     float_t *weight;
@@ -83,31 +83,48 @@ struct input_layer {
 struct conv_layer {
     struct base_layer base;
     uint32_t  fl_batch;
-    uint32_t  fl_height;
-    uint32_t  fl_width;
+    uint32_t  fl_rows;
+    uint32_t  fl_cols;
+    uint32_t  out_rows;
+    uint32_t  out_cols;
     float_t   bias;
     float_t   *filter_core;
     float_t   *pout;
 };
 
-union store_layer {
-    struct input_layer* pinputlayer;
-    struct conv_layer*  pconvlayer;
+
+struct pool_layer {
+    struct base_layer base;
+    uint32_t  pl_rows;
+    uint32_t  pl_cols;
+    uint32_t  out_rows;
+    uint32_t  out_cols;
+    float_t *poolout;
 };
 
-void logpr(float_t* fd, int32_t size,int32_t dept);
+union store_layer {
+    struct input_layer *pinputlayer;
+    struct conv_layer  *pconvlayer;
+    struct pool_layer  *ppool_layer;
+};
 
-inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_height, uint32_t data_width,
-                                  float_t *filter, uint32_t fl_height, uint32_t fl_width, float_t *pOut);
-inline  void conv2d_withlayer(float_t *pneu, uint32_t data_height, uint32_t data_width,
+void logpr(float_t* fd, int32_t rows,int32_t cols, int32_t dept);
+
+inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_rows, uint32_t data_cols,
+                                  float_t *filter, uint32_t fl_rows, uint32_t fl_cols, float_t bias, float_t *pOut);
+inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_cols,
                               struct conv_layer *pconv_layer);
+inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t data_cols,uint32_t batch,
+                           struct pool_layer *ppool_layer, uint32_t  stride);
 
-
-struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t width, uint32_t height,
+struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t cols, uint32_t rows,
                                       const uint32_t batch, float_t bias, float_t stddev);
-struct conv_layer* create_convlayer(const char* pstr, uint32_t width, uint32_t height, uint32_t batch,
+struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t rows, uint32_t batch,
                                     float_t bias, float_t stddev);
 
+struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t rows);
+
+void destory_poollayer(struct pool_layer* pool_layer);
 void destory_convlayer(struct conv_layer* pconv_layer);
 void destory_inputlayer(struct input_layer* pinput_layer);
 

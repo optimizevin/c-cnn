@@ -183,43 +183,49 @@ inline void float_tMatrixMutiply(const float_t *a, const float_t *b, float_t *c,
     }
 }
 
-
-inline  void max_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float_t*pout)
+inline void max_pool(const float_t*pData, uint32_t data_rows, uint32_t data_cols,
+                     uint32_t pl_rows , uint32_t pl_cols, uint32_t stride, float_t * pout)
 {
-    float_t(*pSrc)[cols] = (float_t(*)[cols])src;
-    float_t(*pOut)[cols - pool_size + 1] = (float_t(*)[cols - pool_size + 1])pout;
+    float_t (*pdata)[data_rows][data_cols] = (float_t(*)[data_rows][data_cols])pData;
 
-    for(uint32_t i = 0; i <= (rows - pool_size); i++) {
-        for(uint32_t j = 0; j <= (cols - pool_size); j++) {
-            float_t tmp = 0.f;
-            for(uint32_t ip = 0; ip < pool_size; ip++) {
-                for(uint32_t jp = 0; jp < pool_size; jp++) {
-                    tmp =  MAX(pSrc[ip + i][jp + j], tmp);
+    uint32_t step = 0;
+    for(uint32_t i = 0; i <= (data_rows - stride) ; i += stride) {
+        for(uint32_t j = 0; j <= (data_cols - stride); j += stride) {
+            float_t tmp = FLT_MIN;
+            for(uint32_t ii = i; ii < i + pl_rows; ii++) {
+                for(uint32_t jj = j; jj < j + pl_cols; jj++) {
+                    tmp = tmp > (*pdata)[ii][jj] ? tmp : (*pdata)[ii][jj];
+                    /*printf("%05.3f  ",  (*pdata)[ii][jj]);*/
                 }
             }
-            pOut[i][j] =  tmp;
+            /*printf("%05.3f  \n",  tmp);*/
+            pout[step] = tmp;
+            step++;
         }
     }
 }
 
-inline  void ave_pool(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, float_t*pout)
+inline void ave_pool(const float_t*pData, uint32_t data_rows, uint32_t data_cols,
+                     uint32_t pl_rows , uint32_t pl_cols, uint32_t stride, float_t * pout)
 {
-    float_t(*pSrc)[cols] = (float_t(*)[cols])src;
-    float_t(*pOut)[cols - pool_size + 1] = (float_t(*)[cols - pool_size + 1])pout;
+    float_t (*pdata)[data_rows][data_cols] = (float_t(*)[data_rows][data_cols])pData;
 
-    for(uint32_t i = 0; i <= (rows - pool_size); i++) {
-        for(uint32_t j = 0; j <= (cols - pool_size); j++) {
-            float_t tmp = 0.f;
-            for(uint32_t ip = 0; ip < pool_size; ip++) {
-                for(uint32_t jp = 0; jp < pool_size; jp++) {
-                    tmp +=  pSrc[ip + i][jp + j];
+    uint32_t step = 0;
+    for(uint32_t i = 0; i <= (data_rows - stride) ; i += stride) {
+        for(uint32_t j = 0; j <= (data_cols - stride); j += stride) {
+            float_t tmp = FLT_MIN;
+            for(uint32_t ii = i; ii < i + pl_rows; ii++) {
+                for(uint32_t jj = j; jj < j + pl_cols; jj++) {
+                    tmp = tmp > (*pdata)[ii][jj] ? tmp : (*pdata)[ii][jj];
                 }
             }
-            tmp /= pool_size * pool_size;
-            pOut[i][j] =  tmp;
+            tmp /= pl_rows * pl_cols;
+            pout[step] = tmp;
+            step++;
         }
     }
 }
+
 
 inline void subsampling_fun(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, pFun_Pooll pfunpool, float_t*pout)
 {

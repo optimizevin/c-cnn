@@ -113,6 +113,7 @@ inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_c
         uint32_t cols = data_cols - pconv_layer->fl_cols + 1;
         uint32_t rows = data_rows - pconv_layer->fl_rows + 1;
         pconv_layer->pout = (float_t*)calloc(data_batch * cols * rows * pconv_layer->fl_batch * sizeof(float_t), 1);
+        pconv_layer->out_batch = data_batch * pconv_layer->fl_batch;
     }
 
     float_t (*pfilter)[pconv_layer->fl_rows][pconv_layer->fl_cols] =
@@ -132,7 +133,7 @@ inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_c
     uint32_t step = data_rows * data_cols;
     float_t (*pStepfilter)[pconv_layer->fl_rows][pconv_layer->fl_cols] = pfilter;
     for(uint32_t i = 0; i < data_batch; i++) {
-        for(uint32_t i = 0; i < pconv_layer->fl_batch; i++) {
+        for(uint32_t j = 0; j < pconv_layer->fl_batch; j++) {
             conv2d_withonefilter(pdata, data_rows, data_cols, (float_t*)pStepfilter,
                                  pconv_layer->fl_rows, pconv_layer->fl_cols, pconv_layer->bias, (float_t*)pout);
             pStepfilter++;

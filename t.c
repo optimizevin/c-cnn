@@ -154,15 +154,16 @@ void initNet()
     P[3].pconvlayer = create_convlayer("conv2", 3, 3, CONVERLAYER_1_BATCH, 0.5, 0.8);
     P[4].ppool_layer = create_poollayer("pool2", 2, 2);
 
-    conv2d_withlayer(P[0].pinputlayer->neu, 28, 28, 20, P[1].pconvlayer);
-    printf("conv rows:%d\tconv cols:%d\n",
+    conv2d_withlayer(P[0].pinputlayer->neu, 28, 28, 4, P[1].pconvlayer);
+    printf("conv rows:%d\tconv cols:%d conv batch:%d\n",
            P[1].pconvlayer->out_rows,
-           P[1].pconvlayer->out_cols);
+           P[1].pconvlayer->out_cols,
+           P[1].pconvlayer->out_batch);
 
     pool_withlayer(P[1].pconvlayer->pout,
                    P[1].pconvlayer->out_rows,
                    P[1].pconvlayer->out_cols,
-                   P[1].pconvlayer->fl_batch,
+                   P[1].pconvlayer->out_batch,
                    P[2].ppool_layer, MAX_POOL_STRIDE );
 
     printf("pool rows:%d\tpool cols:%d pool batch:%d\n",
@@ -172,14 +173,14 @@ void initNet()
 
     /*logpr(P[2].ppool_layer->poolout,*/
           /*P[2].ppool_layer->out_rows,*/
-          /*P[2].ppool_layer->out_cols, 1);*/
+          /*P[2].ppool_layer->out_cols, 31);*/
 
     conv2d_withlayer(P[2].ppool_layer->poolout, P[2].ppool_layer->out_rows,
                      P[2].ppool_layer->out_cols, P[2].ppool_layer->pl_batch, P[3].pconvlayer);
     printf("conv2 rows:%d\tconv cols:%d  batch:%d\n",
            P[3].pconvlayer->out_rows,
            P[3].pconvlayer->out_cols,
-           P[3].pconvlayer->fl_batch);
+           P[3].pconvlayer->out_batch);
     /*logpr(P[3].pconvlayer->pout,*/
     /*P[3].pconvlayer->out_rows,*/
     /*P[3].pconvlayer->out_cols, 6);*/
@@ -187,7 +188,7 @@ void initNet()
     pool_withlayer(P[3].pconvlayer->pout,
                    P[3].pconvlayer->out_rows,
                    P[3].pconvlayer->out_cols,
-                   P[3].pconvlayer->fl_batch,
+                   P[3].pconvlayer->out_batch,
                    P[4].ppool_layer, MAX_POOL_STRIDE );
 
     printf("pool2 rows:%d\tpool cols:%d pool batch:%d\n",

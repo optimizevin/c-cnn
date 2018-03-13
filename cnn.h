@@ -87,6 +87,7 @@ struct conv_layer {
     uint32_t  fl_cols;
     uint32_t  out_rows;
     uint32_t  out_cols;
+    uint32_t  out_batch;
     float_t   bias;
     float_t   *filter_core;
     float_t   *pout;

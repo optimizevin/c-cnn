@@ -99,6 +99,7 @@ struct pool_layer {
     uint32_t  pl_cols;
     uint32_t  out_rows;
     uint32_t  out_cols;
+    uint32_t  pl_batch;
     float_t *poolout;
 };
 
@@ -112,9 +113,9 @@ void logpr(float_t* fd, int32_t rows,int32_t cols, int32_t dept);
 
 inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_rows, uint32_t data_cols,
                                   float_t *filter, uint32_t fl_rows, uint32_t fl_cols, float_t bias, float_t *pOut);
-inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_cols,
+inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
                               struct conv_layer *pconv_layer);
-inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t data_cols,uint32_t batch,
+inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t data_cols,uint32_t data_batch,
                            struct pool_layer *ppool_layer, uint32_t  stride);
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t cols, uint32_t rows,

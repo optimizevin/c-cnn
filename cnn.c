@@ -105,14 +105,14 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_rows, uint
     }
 }
 
-inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_cols,
+inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
                               struct conv_layer *pconv_layer)
 {
     assert(pneu != NULL);
     if(pconv_layer->pout == NULL) {
         uint32_t cols = data_cols - pconv_layer->fl_cols + 1;
         uint32_t rows = data_rows - pconv_layer->fl_rows + 1;
-        pconv_layer->pout = (float_t*)calloc(cols * rows * pconv_layer->fl_batch * sizeof(float_t), 1);
+        pconv_layer->pout = (float_t*)calloc(data_batch * cols * rows * pconv_layer->fl_batch * sizeof(float_t), 1);
     }
 
     float_t (*pfilter)[pconv_layer->fl_rows][pconv_layer->fl_cols] =
@@ -127,11 +127,19 @@ inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_c
     float_t (*pout)[nbox_rows][nbox_cols] =
         (float_t(*)[nbox_rows][nbox_cols])pconv_layer->pout;
 
-    for(uint32_t i = 0; i < pconv_layer->fl_batch; i++) {
-        conv2d_withonefilter(pneu, data_rows, data_cols, (float_t*)pfilter,
-                             pconv_layer->fl_rows, pconv_layer->fl_cols, pconv_layer->bias, (float_t*)pout);
-        pfilter++;
-        pout++;
+
+    float_t *pdata = pneu;
+    uint32_t step = data_rows * data_cols;
+    float_t (*pStepfilter)[pconv_layer->fl_rows][pconv_layer->fl_cols] = pfilter;
+    for(uint32_t i = 0; i < data_batch; i++) {
+        for(uint32_t i = 0; i < pconv_layer->fl_batch; i++) {
+            conv2d_withonefilter(pdata, data_rows, data_cols, (float_t*)pStepfilter,
+                                 pconv_layer->fl_rows, pconv_layer->fl_cols, pconv_layer->bias, (float_t*)pout);
+            pStepfilter++;
+            pout++;
+        }
+        pStepfilter = pfilter;
+        pdata += step;
     }
 }
 
@@ -155,17 +163,16 @@ inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t dat
         out_cols++;
     }
 
-    /*printf("r:%d\tc%d\ts:%d\n", out_rows, out_cols, stride);*/
-
     ppool_layer->out_rows = out_rows;
     ppool_layer->out_cols = out_cols;
 
-    ppool_layer->poolout = (float_t*)calloc(out_rows * out_cols * batch , 1);
+    ppool_layer->poolout = (float_t*)calloc(out_rows * out_cols * batch * sizeof(float_t) , 1);
     for(uint32_t i = 0; i < batch; i++) {
-        uint32_t offset = out_rows * out_cols * i;
+        uint32_t offset = out_rows * out_cols * i ;
         max_pool(pData + offset, data_rows, data_cols, ppool_layer->pl_rows,
-                 ppool_layer->pl_cols, stride, ppool_layer->poolout);
+                 ppool_layer->pl_cols, stride, ppool_layer->poolout + offset);
     }
+    ppool_layer->pl_batch =  batch;
 
 }
 

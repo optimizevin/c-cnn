@@ -142,61 +142,91 @@ void loadall()
 
 void initNet()
 {
-    union store_layer players[8];
+    union store_layer P[8];
 #define  CONVERLAYER_1_BATCH  8
 #define  MAX_POOL_STRIDE  2
 
-    players[0].pinputlayer = create_inputlayer("input", pint_img, 28, 28, 20 , 0.5, 0.8);
-    players[1].pconvlayer = create_convlayer("conv1", 7, 7, CONVERLAYER_1_BATCH,0.5, 0.8);
+    P[0].pinputlayer = create_inputlayer("input", pint_img, 28, 28, 20 , 0.5, 0.8);
+    P[1].pconvlayer = create_convlayer("conv1", 7, 7, CONVERLAYER_1_BATCH, 0.5, 0.8);
+    /*P[1].pconvlayer = create_convlayer("conv1", 2, 2, 8, 0.5, 0.8);*/
     /*28-7+1 = 22*/
-    players[2].ppool_layer = create_poollayer("pool", 2, 2);
+    P[2].ppool_layer = create_poollayer("pool", 5, 5);
+    P[3].pconvlayer = create_convlayer("conv2", 3, 3, CONVERLAYER_1_BATCH, 0.5, 0.8);
+    P[4].ppool_layer = create_poollayer("pool2", 2, 2);
 
-    /*players[1].pconvlayer = create_convlayer("conv1", 2, 2, 8, 0.5, 0.8);*/
-    conv2d_withlayer(players[0].pinputlayer->neu, 28, 28, players[1].pconvlayer);
-    /*printf("conv rows:%d\tconv cols:%d\n",*/
-                   /*players[1].pconvlayer->out_rows,*/
-                   /*players[1].pconvlayer->out_cols);*/
+    conv2d_withlayer(P[0].pinputlayer->neu, 28, 28, 20, P[1].pconvlayer);
+    printf("conv rows:%d\tconv cols:%d\n",
+           P[1].pconvlayer->out_rows,
+           P[1].pconvlayer->out_cols);
 
-    pool_withlayer(players[1].pconvlayer->pout,
-                   players[1].pconvlayer->out_rows,
-                   players[1].pconvlayer->out_cols,
-                   players[1].pconvlayer->fl_batch,
-                   players[2].ppool_layer, MAX_POOL_STRIDE );
+    pool_withlayer(P[1].pconvlayer->pout,
+                   P[1].pconvlayer->out_rows,
+                   P[1].pconvlayer->out_cols,
+                   P[1].pconvlayer->fl_batch,
+                   P[2].ppool_layer, MAX_POOL_STRIDE );
 
-    /*printf("pool rows:%d\tpool cols:%d\n",*/
-          /*players[2].ppool_layer->out_rows,*/
-          /*players[2].ppool_layer->out_cols);*/
+    printf("pool rows:%d\tpool cols:%d pool batch:%d\n",
+           P[2].ppool_layer->out_rows,
+           P[2].ppool_layer->out_cols,
+           P[2].ppool_layer->pl_batch);
 
-    logpr(players[2].ppool_layer->poolout,
-          players[2].ppool_layer->out_rows,
-          players[2].ppool_layer->out_cols, 0);
+    /*logpr(P[2].ppool_layer->poolout,*/
+          /*P[2].ppool_layer->out_rows,*/
+          /*P[2].ppool_layer->out_cols, 1);*/
+
+    conv2d_withlayer(P[2].ppool_layer->poolout, P[2].ppool_layer->out_rows,
+                     P[2].ppool_layer->out_cols, P[2].ppool_layer->pl_batch, P[3].pconvlayer);
+    printf("conv2 rows:%d\tconv cols:%d  batch:%d\n",
+           P[3].pconvlayer->out_rows,
+           P[3].pconvlayer->out_cols,
+           P[3].pconvlayer->fl_batch);
+    /*logpr(P[3].pconvlayer->pout,*/
+    /*P[3].pconvlayer->out_rows,*/
+    /*P[3].pconvlayer->out_cols, 6);*/
+
+    pool_withlayer(P[3].pconvlayer->pout,
+                   P[3].pconvlayer->out_rows,
+                   P[3].pconvlayer->out_cols,
+                   P[3].pconvlayer->fl_batch,
+                   P[4].ppool_layer, MAX_POOL_STRIDE );
+
+    printf("pool2 rows:%d\tpool cols:%d pool batch:%d\n",
+           P[4].ppool_layer->out_rows,
+           P[4].ppool_layer->out_cols,
+           P[4].ppool_layer->pl_batch);
+
+    /*logpr(P[4].ppool_layer->poolout,*/
+          /*P[4].ppool_layer->out_rows,*/
+          /*P[4].ppool_layer->out_cols, 7);*/
+
     /*logpr(pint_img,28,28,0);*/
-    /*logpr(players[0].pinputlayer->neu,28,28,0);*/
-    /*logpr(players[1].pconvlayer->pout, 22,22, 7);*/
-    return ;
+    /*logpr(P[0].pinputlayer->neu,28,28,0);*/
+    /*logpr(P[1].pconvlayer->pout, 22,22, 7);*/
 
-    /*players[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);*/
-    /*players[1] = makelayer("conv1", 8, 6, 6, 0.5, 0.8, LAY_CONV);*/
-    /*players[2] = makelayer("s2",2,2,1,0.5,0.8,LAY_POOL);*/
+    /*P[0] = makelayer("input", 28, 28, 1, 0.5, 0.8, LAY_INPUT);*/
+    /*P[1] = makelayer("conv1", 8, 6, 6, 0.5, 0.8, LAY_CONV);*/
+    /*P[2] = makelayer("s2",2,2,1,0.5,0.8,LAY_POOL);*/
     /*subsampling_fun();*/
-    /*players[3] = makelayer("conv3",5,5,16,0.5,0.8,LAY_CONV);*/
-    /*players[4] = makelayer("s4",2,2,1,0.5,0.8,LAY_SUBSAM);*/
-    /*players[5] = makelayer("conv5",5,5,120,0.5,0.8,LAY_CONV);*/
-    /*players[6] = makelayer("FullyConnect",28,28,1,0.5,0.8,LAY_FULLYCONNECT);*/
-    /*players[7] = makelayer("Output",10,1,1,0.5,0.8,LAY_OUT);*/
+    /*P[3] = makelayer("conv3",5,5,16,0.5,0.8,LAY_CONV);*/
+    /*P[4] = makelayer("s4",2,2,1,0.5,0.8,LAY_SUBSAM);*/
+    /*P[5] = makelayer("conv5",5,5,120,0.5,0.8,LAY_CONV);*/
+    /*P[6] = makelayer("FullyConnect",28,28,1,0.5,0.8,LAY_FULLYCONNECT);*/
+    /*P[7] = makelayer("Output",10,1,1,0.5,0.8,LAY_OUT);*/
 
 
     /*const uint32_t size = 28*28;*/
     /*for(uint32_t i=0;i<60000;i++){*/
     /*const uint32_t step = i*size;*/
-    /*memcpy(players[0]->neu,(float_t*)pint_img+step,size);*/
+    /*memcpy(P[0]->neu,(float_t*)pint_img+step,size);*/
     /*}*/
-    /*core_forward(players, 2, 0.01);*/
+    /*core_forward(P, 2, 0.01);*/
 
-    destory_poollayer(players[2].ppool_layer);
-    destory_convlayer(players[1].pconvlayer);
-    destory_inputlayer(players[0].pinputlayer);
-    /*SAFEFREE(players[1]->pconv_filter);*/
+    destory_poollayer(P[4].ppool_layer);
+    destory_convlayer(P[3].pconvlayer);
+    destory_poollayer(P[2].ppool_layer);
+    destory_convlayer(P[1].pconvlayer);
+    destory_inputlayer(P[0].pinputlayer);
+    /*SAFEFREE(P[1]->pconv_filter);*/
 }
 
 

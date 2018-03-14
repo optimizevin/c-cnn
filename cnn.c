@@ -99,6 +99,7 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_rows, uint
                     tmp += (*pImg)[ida + fda][jda + fdj] * (*pfilter)[fda][fdj];
                 }
             }
+            tmp = Relu_def(tmp);
             tmp += bias;
             (*(float_t(*)[][nbox_cols])pOut)[ida][jda] = tmp;
         }

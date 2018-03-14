@@ -58,6 +58,7 @@
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)>(b))?(b):(a))
+#define Relu_def(x) x>0?x:0
 
 inline float_t sigmoid(const float_t x);
 
@@ -66,10 +67,12 @@ struct  notelist {
 };
 
 
+
 typedef  void(*pFun_Pooll)(float_t *, uint32_t , uint32_t , uint32_t , float_t*);
 
+inline void padding(float_t* p,uint32_t rows,uint32_t cols,uint32_t step,float_t *pout);
 
-inline  void bias( float_t *pfloat_t, const  uint32_t nsize, const float_t stddev);
+inline  void bias( float_t *pfloat, const  uint32_t nsize, const float_t stddev);
 inline  float_t  generateGaussianNoise(const float_t mean, const float_t stdDev);
 inline  float_t* randf(const uint32_t nsize, const float_t stddev);
 

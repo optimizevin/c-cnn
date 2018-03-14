@@ -49,12 +49,9 @@
 
 #define  NAME_LENGTH  128
 
-struct output_block {
-    uint32_t  in_rows;
-    uint32_t  in_cols;
-    float_t   data[0];
+struct  block{
+    float_t * pdata;
 };
-
 
 enum LAYERTYPE {
     LAY_INPUT,

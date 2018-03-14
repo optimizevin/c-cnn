@@ -51,7 +51,6 @@
 #include <memory.h>
 
 #define sigmoid_exp fastexp
-#define Relu_def(x) x>0?x:0
 //noisyRelu
 //leakyRelu
 //
@@ -117,10 +116,16 @@ inline  float_t* randf(const uint32_t nsize, const float_t stddev)
     return ret;
 }
 
-inline  void bias(float_t *pfloat_t, const  uint32_t nsize, const float_t stddev)
+//or reshape ?
+inline void padding(float_t* p,uint32_t rows,uint32_t cols,uint32_t step,float_t *pout)
+{
+
+}
+
+inline  void bias(float_t *pfloat, const  uint32_t nsize, const float_t stddev)
 {
     for(uint32_t i = 0; i < nsize; i++) {
-        pfloat_t[i] += stddev;
+        pfloat[i] += stddev;
     }
 }
 

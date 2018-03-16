@@ -86,7 +86,6 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_rows, uint
     float_t (*pfilter)[fl_rows][fl_cols] =
         (float_t(*)[fl_rows][fl_cols])filter;
 
-
     float_t tmp = 0.f;
     const uint32_t  nbox_rows = data_rows - fl_rows + 1;
     const uint32_t  nbox_cols = data_cols - fl_cols + 1;
@@ -199,10 +198,6 @@ struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, ui
         ret->neu[i] = pdata[i];
     }
 
-    ret->weight = (float_t*)calloc(fullsize * sizeof(float_t), 1);
-    for(uint32_t i = 0; i < fullsize; i++) {
-        ret->weight[i] = generateGaussianNoise(0.f, stddev);
-    }
     return ret;
 }
 
@@ -210,9 +205,6 @@ void destory_inputlayer(struct input_layer* pinput_layer)
 {
     if(pinput_layer->neu) {
         free(pinput_layer->neu);
-    }
-    if(pinput_layer->weight) {
-        free(pinput_layer->weight);
     }
     free(pinput_layer);
 }
@@ -231,6 +223,58 @@ struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t ro
     ret->filter_core = create_filtercore(batch, cols, rows, stddev);
 
     return ret;
+}
+
+
+struct fc_layer* create_fully_connected_layer(const char*pstr)
+{
+    struct  fc_layer * ret = (struct fc_layer*)calloc(sizeof(struct fc_layer), 1);
+    ret->base.laytype = LAY_FULLYCONNECT;
+    strcpy(ret->base.layerName, pstr);
+    return ret;
+}
+
+inline  void fully_connected(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
+                             struct fc_layer *pfc_layer, uint32_t neunum)
+{
+    assert(pdata != NULL);
+    const uint32_t fullsize = data_cols * data_rows * data_batch;
+    if(pfc_layer->neu == NULL) {
+        pfc_layer->neu = (float_t*)calloc(sizeof(float_t) * fullsize, 1);
+    }
+    memcpy(pfc_layer->neu, pdata,fullsize);
+    pfc_layer->size = fullsize;
+    if(pfc_layer->weight == NULL) {
+        pfc_layer->weight = (float_t*)calloc(sizeof(float_t) * neunum, 1);
+    }
+    for(uint32_t  i = 0; i < neunum; i++) {
+        pfc_layer->weight[i] =  generateGaussianNoise(0.5f, 0.8f);
+    }
+}
+
+
+inline void dropout_layer(float_t *pdata, uint32_t neunum, struct dropout_layer *pdrop_layer)
+{
+    pdrop_layer->size = neunum;
+    pdrop_layer->drop_out = (float_t*)calloc(sizeof(float_t) * neunum, 1);
+    dropout((const float_t*)pdata,neunum,0.5,pdrop_layer->drop_out);
+}
+
+struct dropout_layer* create_dropout_layer(const char*pstr)
+{
+    struct  dropout_layer * ret = (struct dropout_layer*)calloc(sizeof(struct dropout_layer), 1);
+    ret->base.laytype = LAY_DROPOUT;
+    strcpy(ret->base.layerName, pstr);
+    return ret;
+}
+
+
+void destory_droplayer(struct dropout_layer* dropout_layer)
+{
+    if(dropout_layer->drop_out) {
+        free(dropout_layer->drop_out);
+    }
+    free(dropout_layer);
 }
 
 void destory_convlayer(struct conv_layer* pconv_layer)
@@ -257,5 +301,16 @@ void destory_poollayer(struct pool_layer* pool_layer)
         free(pool_layer->poolout);
     }
     free(pool_layer);
+}
+
+void destory_fclayer(struct fc_layer* fc_layer)
+{
+    if(fc_layer->neu) {
+        free(fc_layer->neu);
+    }
+    if(fc_layer->weight) {
+        free(fc_layer->weight);
+    }
+    free(fc_layer);
 }
 

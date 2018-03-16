@@ -96,28 +96,24 @@ int test()
     }
     return 0;
 
+}
 
-    /*float_t b[] = {2.f, 0.5, 1.f, 0.1, 1.f, 3.f};*/
-    /*float_t blabel[] = {0.2, 0.3, 0.5, 0.1, 0.6, 0.3};*/
-    /*float_t out[2] ;*/
-    /*softMax_cross_entropy_with_logits(blabel,b,2,3,out);*/
-    /*printf("%0.6f\t%0.6f  reduce:%0.6f\n",out[0],out[1], reduce_ment(out,2));*/
+void  test_softmax()
+{
+    float_t b[] = {2.f, 0.5, 1.f, 0.1, 1.f, 3.f};
+    float_t blabel[] = {0.2, 0.3, 0.5, 0.1, 0.6, 0.3};
+    float_t out[2] ;
+    softMax_cross_entropy_with_logits(blabel, b, 2, 3, out);
+    printf("%0.6f\t%0.6f  reduce:%0.6f\n", out[0], out[1], reduce_ment(out, 2));
 
-    /*return 0;*/
+    float_t pb[] = {3.0, 1.0, 0.2, 5.0, 7.12, 10.0};
+    softMax(pb, 6);
+    for(int i = 0; i < 6; i++) {
+        printf("%5.6f\t", pb[i]);
+    }
+    printf("\n");
 
-
-    /*for(;;) {*/
-    /*uint32_t a, b;*/
-    /*scanf("%d%d", &a, &b);*/
-    /*uint32_t k[a][b];*/
-    /*uint32_t  ka = CHECK_ROWS(k);*/
-    /*uint32_t  kb = CHECK_COLS(k);*/
-    /*printf("ka size: %d\nkb size:%d\n", ka, kb);*/
-    /*}*/
-
-    /*[>uint32_t (*p)[28];<]*/
-    /*return 0;*/
-
+    return ;
 }
 
 void test_maxpool()
@@ -156,20 +152,33 @@ void initNet()
 #define  MAX_POOL_STRIDE  2
 
     P[0].pinputlayer = create_inputlayer("input", pint_img, 28, 28, 20 , 0.5, 0.8);
+    /*logpr(P[0].pinputlayer->neu,*/
+    /*P[0].pinputlayer->in_rows,*/
+    /*P[0].pinputlayer->in_cols, 0);*/
+
     P[1].pconvlayer = create_convlayer("conv1", 7, 7, CONVERLAYER_1_BATCH, 0.5, 0.8);
     /*28-7+1 = 22*/
     P[2].ppool_layer = create_poollayer("pool", 5, 5);
     P[3].pconvlayer = create_convlayer("conv2", 3, 3, CONVERLAYER_1_BATCH, 0.5, 0.8);
     P[4].ppool_layer = create_poollayer("pool2", 2, 2);
+    P[5].pfc_layer = create_fully_connected_layer("fully connection");
+    P[6].pdrop_layer = create_dropout_layer("dropout layer");
+    P[7].pfc_layer = create_fully_connected_layer("output layer");
 
     conv2d_withlayer(P[0].pinputlayer->neu, 28, 28, 4, P[1].pconvlayer);
     printf("conv rows:%d\tconv cols:%d conv batch:%d\n",
            P[1].pconvlayer->out_rows,
            P[1].pconvlayer->out_cols,
            P[1].pconvlayer->out_batch);
+
+    /*logpr(P[1].pconvlayer->pout,*/
+    /*P[1].pconvlayer->out_rows,*/
+    /*P[1].pconvlayer->out_cols, 0);*/
+    /*softMax(P[1].pconvlayer->pout, P[1].pconvlayer->out_rows*P[1].pconvlayer->out_cols);*/
     logpr(P[1].pconvlayer->pout,
           P[1].pconvlayer->out_rows,
-          P[1].pconvlayer->out_cols, 6);
+          P[1].pconvlayer->out_cols, 0);
+
 
     pool_withlayer(P[1].pconvlayer->pout,
                    P[1].pconvlayer->out_rows,
@@ -207,8 +216,28 @@ void initNet()
            P[4].ppool_layer->out_cols,
            P[4].ppool_layer->pl_batch);
 
+    fully_connected( P[4].ppool_layer->poolout,
+                     P[4].ppool_layer->out_rows,
+                     P[4].ppool_layer->out_cols,
+                     P[4].ppool_layer->pl_batch,
+                     P[5].pfc_layer, 84);
+
+
+    dropout_layer( P[5].pfc_layer->neu,
+                   P[5].pfc_layer->size,
+                   P[6].pdrop_layer);
+
+    /*printf("\n\n\n");*/
+    /*for(uint32_t i = 0; i < 100; i++) {*/
+        /*printf("%5.3f ",P[6].pdrop_layer->drop_out[i]);*/
+    /*}*/
+    /*printf("\n\n\n");*/
+
     /*core_forward(P, 2, 0.01);*/
 
+    destory_fclayer(P[7].pout_layer);
+    destory_droplayer(P[6].pdrop_layer);
+    destory_fclayer(P[5].pfc_layer);
     destory_poollayer(P[4].ppool_layer);
     destory_convlayer(P[3].pconvlayer);
     destory_poollayer(P[2].ppool_layer);
@@ -223,6 +252,8 @@ int main(int argc, char **argv)
     srand((unsigned)time(NULL));
     printf("test\n");
     /*test();*/
+    /*test_softmax();*/
+    /*return 0;*/
 
     loadall();
     /*pint_img*/

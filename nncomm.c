@@ -117,9 +117,29 @@ inline  float_t* randf(const uint32_t nsize, const float_t stddev)
 }
 
 //or reshape ?
-inline void padding(float_t* p,uint32_t rows,uint32_t cols,uint32_t step,float_t *pout)
+inline void padding(float_t* p, uint32_t rows, uint32_t cols, uint32_t step, float_t *pout)
 {
 
+}
+
+
+inline void MinMax(float_t *pdata, uint32_t rows, uint32_t cols)
+{
+    float_t (*pd)[rows][cols] = (float_t(*)[rows][cols])pdata;
+    float_t mmax = FLT_MIN;
+    float_t mmin = FLT_MAX;
+    for(int32_t i = 0; i < rows; i++) {
+        for(int32_t j = 0; j < cols; j++) {
+            mmax = MAX(mmax, (*pd)[i][j]);
+            mmin = MIN(mmin, (*pd)[i][j]);
+        }
+    }
+    float_t distance = mmax - mmin;
+    for(int32_t i = 0; i < rows; i++) {
+        for(int32_t j = 0; j < cols; j++) {
+            (*pd)[i][j] = ((*pd)[i][j] - mmin) / distance;
+        }
+    }
 }
 
 inline  void bias(float_t *pfloat, const  uint32_t nsize, const float_t stddev)
@@ -141,7 +161,7 @@ inline float_t Relu(const float_t *pf, uint32_t len)
     return  t;
 }
 
-inline void Dropout(const float_t *src, const uint32_t len, float_t keep_prob, float_t *out)
+inline void dropout(const float_t *src, const uint32_t len, float_t keep_prob, float_t *out)
 {
     for(int i = 0; i < len; i++) {
         float_t tmp = (rand() / ((float_t)RAND_MAX)) ;
@@ -257,11 +277,22 @@ inline void foreach_log(float_t *src, const uint32_t len)
 }
 
 
-inline void softMax(float_t *src, uint32_t rows, uint32_t cols)
+inline void softMax(float_t *src, uint32_t size)
+{
+    float_t mf = 0.f;
+    for(uint32_t i = 0; i < size; i++) {
+        mf += exp(src[i]);
+    }
+    for(uint32_t i = 0; i < size; i++) {
+        src[i] = exp(src[i]) / mf;
+    }
+}
+
+static inline void softMax_cross(float_t *src, uint32_t rows, uint32_t cols)
 {
     for (uint32_t i = 0; i < rows; ++i) {
-        float_t max = 0.0;
-        float_t sum = 0.0;
+        float_t max = 0.f;
+        float_t sum = 0.f;
         for (uint32_t j = 0; j < cols; j++) {
             if (max < src[j + i * cols])
                 max = src[j + i * cols];
@@ -284,7 +315,7 @@ inline void softMax_cross_entropy_with_logits(const float_t *labels, const float
 {
     float_t tmp[rows * cols];
     memcpy(tmp, logits, rows * cols * sizeof(float_t));
-    softMax(tmp, rows, cols);
+    softMax_cross(tmp, rows, cols);
     const  uint32_t bsize = sizeof(tmp) / sizeof(tmp[0]);
     foreach_log(tmp, bsize);
 

@@ -71,6 +71,8 @@ struct  notelist {
 typedef  void(*pFun_Pooll)(float_t *, uint32_t , uint32_t , uint32_t , float_t*);
 
 inline void padding(float_t* p,uint32_t rows,uint32_t cols,uint32_t step,float_t *pout);
+ //Min-Max normalization 
+inline void MinMax(float_t *pdata,uint32_t rows,uint32_t cols);
 
 inline  void bias( float_t *pfloat, const  uint32_t nsize, const float_t stddev);
 inline  float_t  generateGaussianNoise(const float_t mean, const float_t stdDev);
@@ -90,9 +92,9 @@ inline void ave_pool(const float_t*pData, uint32_t data_rows, uint32_t data_cols
 inline void subsampling_fun(float_t *src, uint32_t rows, uint32_t cols, uint32_t pool_size, pFun_Pooll pfunpool,float_t*pout);
 
 inline float_t Relu(const float_t *pf, uint32_t len);
-inline void Dropout(const float_t *src, const uint32_t len, float_t keep_prob, float_t *out);
+inline void dropout(const float_t *src, const uint32_t len, float_t keep_prob, float_t *out);
 inline float_t reduce_ment(const float_t *src, const uint32_t len);
-inline void softMax(float_t *src, uint32_t rows, uint32_t cols);
+inline void softMax(float_t *src, uint32_t size);
 inline void softMax_cross_entropy_with_logits(const float_t *labels, const float_t *logits, 
         uint32_t rows, uint32_t cols,float_t *pOut);
 

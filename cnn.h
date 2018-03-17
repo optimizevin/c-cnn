@@ -59,7 +59,7 @@ enum LAYERTYPE {
     LAY_POOL,
     LAY_FULLYCONNECT,
     LAY_DROPOUT,
-    LAY_OUT
+    LAY_OUTPUT
 };
 
 struct base_layer {
@@ -114,12 +114,20 @@ struct dropout_layer {
     float_t *drop_out;
 };
 
+struct output_layer {
+    struct base_layer base;
+    uint32_t  size;
+    float_t *output;
+};
+
+
 union store_layer {
+    struct output_layer     *poutput_layer;
     struct dropout_layer    *pdrop_layer;
-    struct fc_layer         *pout_layer;
+    struct output_layer     *pout_layer;
     struct fc_layer         *pfc_layer;
-    struct input_layer      *pinputlayer;
-    struct conv_layer       *pconvlayer;
+    struct input_layer      *pinput_layer;
+    struct conv_layer       *pconv_layer;
     struct pool_layer       *ppool_layer;
 };
 
@@ -138,18 +146,15 @@ struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t ro
                                     float_t bias, float_t stddev);
 
 struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t rows);
-struct fc_layer* create_fully_connected_layer(const char*pstr);
 
+struct fc_layer* create_fully_connected_layer(const char*pstr);
 struct dropout_layer* create_dropout_layer(const char*pstr);
+struct output_layer* create_output_layer(const char*pstr,uint32_t neunum);
+
 inline void dropout_layer(float_t *pdata, uint32_t neunum, struct dropout_layer *pdrop_layer);
 
 inline  void fully_connected(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
                              struct fc_layer *pfc_layer, uint32_t neunum);
 
-void destory_droplayer(struct dropout_layer* dropout_layer);
-void destory_fclayer(struct fc_layer* fc_layer);
-void destory_poollayer(struct pool_layer* pool_layer);
-void destory_convlayer(struct conv_layer* pconv_layer);
-void destory_inputlayer(struct input_layer* pinput_layer);
-
+void destory_layer(union store_layer *player);
 

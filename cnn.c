@@ -201,13 +201,6 @@ struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, ui
     return ret;
 }
 
-void destory_inputlayer(struct input_layer* pinput_layer)
-{
-    if(pinput_layer->neu) {
-        free(pinput_layer->neu);
-    }
-    free(pinput_layer);
-}
 
 
 struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t rows, uint32_t batch,
@@ -242,7 +235,7 @@ inline  void fully_connected(float_t *pdata, uint32_t data_rows, uint32_t data_c
     if(pfc_layer->neu == NULL) {
         pfc_layer->neu = (float_t*)calloc(sizeof(float_t) * fullsize, 1);
     }
-    memcpy(pfc_layer->neu, pdata,fullsize);
+    memcpy(pfc_layer->neu, pdata, fullsize);
     pfc_layer->size = fullsize;
     if(pfc_layer->weight == NULL) {
         pfc_layer->weight = (float_t*)calloc(sizeof(float_t) * neunum, 1);
@@ -250,14 +243,6 @@ inline  void fully_connected(float_t *pdata, uint32_t data_rows, uint32_t data_c
     for(uint32_t  i = 0; i < neunum; i++) {
         pfc_layer->weight[i] =  generateGaussianNoise(0.5f, 0.8f);
     }
-}
-
-
-inline void dropout_layer(float_t *pdata, uint32_t neunum, struct dropout_layer *pdrop_layer)
-{
-    pdrop_layer->size = neunum;
-    pdrop_layer->drop_out = (float_t*)calloc(sizeof(float_t) * neunum, 1);
-    dropout((const float_t*)pdata,neunum,0.5,pdrop_layer->drop_out);
 }
 
 struct dropout_layer* create_dropout_layer(const char*pstr)
@@ -268,22 +253,24 @@ struct dropout_layer* create_dropout_layer(const char*pstr)
     return ret;
 }
 
-
-void destory_droplayer(struct dropout_layer* dropout_layer)
+struct output_layer* create_output_layer(const char*pstr,uint32_t neunum)
 {
-    if(dropout_layer->drop_out) {
-        free(dropout_layer->drop_out);
-    }
-    free(dropout_layer);
+    struct  output_layer * ret = (struct output_layer*)calloc(sizeof(struct output_layer), 1);
+    ret->base.laytype = LAY_OUTPUT;
+    strcpy(ret->base.layerName, pstr);
+    ret->size = neunum;
+    ret->output = (float_t*)calloc(neunum*sizeof(float_t),1);
+    return ret;
 }
 
-void destory_convlayer(struct conv_layer* pconv_layer)
+
+inline void dropout_layer(float_t *pdata, uint32_t neunum, struct dropout_layer *pdrop_layer)
 {
-    if(pconv_layer->filter_core) {
-        free(pconv_layer->filter_core);
-    }
-    free(pconv_layer);
+    pdrop_layer->size = neunum;
+    pdrop_layer->drop_out = (float_t*)calloc(sizeof(float_t) * neunum, 1);
+    dropout((const float_t*)pdata, neunum, 0.5, pdrop_layer->drop_out);
 }
+
 
 struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t rows)
 {
@@ -295,22 +282,56 @@ struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t ro
     return ret;
 }
 
-void destory_poollayer(struct pool_layer* pool_layer)
+void destory_layer(union store_layer *player)
 {
-    if(pool_layer->poolout) {
-        free(pool_layer->poolout);
+    switch(player->pconv_layer->base.laytype) {
+    case  LAY_INPUT: {
+        if(player->pinput_layer->neu) {
+            free(player->pinput_layer->neu);
+        }
+        free(player->pinput_layer);
     }
-    free(pool_layer);
-}
+    break;
+    case  LAY_CONV: {
+        if(player->pconv_layer->filter_core) {
+            free(player->pconv_layer->filter_core);
+        }
+        free(player->pconv_layer);
+    }
+    break;
+    case  LAY_POOL: {
+        if(player->ppool_layer->poolout) {
+            free(player->ppool_layer->poolout);
+        }
+        free(player->ppool_layer);
+    }
+    break;
+    case  LAY_FULLYCONNECT: {
+        if(player->pfc_layer->neu) {
+            free(player->pfc_layer->neu);
+        }
+        if(player->pfc_layer->weight) {
+            free(player->pfc_layer->weight);
+        }
+        free(player->pfc_layer);
+    }
+    break;
+    case  LAY_DROPOUT: {
+        if(player->pdrop_layer->drop_out) {
+            free(player->pdrop_layer->drop_out);
+        }
+        free(player->pdrop_layer);
+    }
+    break;
+    case  LAY_OUTPUT: {
+        if(player->pout_layer->output) {
+            free(player->pout_layer->output);
+        }
+        free(player->pout_layer);
+    }
+    break;
 
-void destory_fclayer(struct fc_layer* fc_layer)
-{
-    if(fc_layer->neu) {
-        free(fc_layer->neu);
+    default:
+        break;
     }
-    if(fc_layer->weight) {
-        free(fc_layer->weight);
-    }
-    free(fc_layer);
 }
-

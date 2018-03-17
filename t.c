@@ -151,39 +151,39 @@ void initNet()
 #define  CONVERLAYER_1_BATCH  8
 #define  MAX_POOL_STRIDE  2
 
-    P[0].pinputlayer = create_inputlayer("input", pint_img, 28, 28, 20 , 0.5, 0.8);
+    P[0].pinput_layer = create_inputlayer("input", pint_img, 28, 28, 20 , 0.5, 0.8);
     /*logpr(P[0].pinputlayer->neu,*/
     /*P[0].pinputlayer->in_rows,*/
     /*P[0].pinputlayer->in_cols, 0);*/
 
-    P[1].pconvlayer = create_convlayer("conv1", 7, 7, CONVERLAYER_1_BATCH, 0.5, 0.8);
+    P[1].pconv_layer = create_convlayer("conv1", 7, 7, CONVERLAYER_1_BATCH, 0.5, 0.8);
     /*28-7+1 = 22*/
     P[2].ppool_layer = create_poollayer("pool", 5, 5);
-    P[3].pconvlayer = create_convlayer("conv2", 3, 3, CONVERLAYER_1_BATCH, 0.5, 0.8);
+    P[3].pconv_layer = create_convlayer("conv2", 3, 3, CONVERLAYER_1_BATCH, 0.5, 0.8);
     P[4].ppool_layer = create_poollayer("pool2", 2, 2);
     P[5].pfc_layer = create_fully_connected_layer("fully connection");
     P[6].pdrop_layer = create_dropout_layer("dropout layer");
-    P[7].pfc_layer = create_fully_connected_layer("output layer");
+    P[7].poutput_layer = create_output_layer("output layer",10);
 
-    conv2d_withlayer(P[0].pinputlayer->neu, 28, 28, 4, P[1].pconvlayer);
+    conv2d_withlayer(P[0].pinput_layer->neu, 28, 28, 4, P[1].pconv_layer);
     printf("conv rows:%d\tconv cols:%d conv batch:%d\n",
-           P[1].pconvlayer->out_rows,
-           P[1].pconvlayer->out_cols,
-           P[1].pconvlayer->out_batch);
+           P[1].pconv_layer->out_rows,
+           P[1].pconv_layer->out_cols,
+           P[1].pconv_layer->out_batch);
 
     /*logpr(P[1].pconvlayer->pout,*/
     /*P[1].pconvlayer->out_rows,*/
     /*P[1].pconvlayer->out_cols, 0);*/
     /*softMax(P[1].pconvlayer->pout, P[1].pconvlayer->out_rows*P[1].pconvlayer->out_cols);*/
-    logpr(P[1].pconvlayer->pout,
-          P[1].pconvlayer->out_rows,
-          P[1].pconvlayer->out_cols, 0);
+    /*logpr(P[1].pconv_layer->pout,*/
+          /*P[1].pconv_layer->out_rows,*/
+          /*P[1].pconv_layer->out_cols, 0);*/
 
 
-    pool_withlayer(P[1].pconvlayer->pout,
-                   P[1].pconvlayer->out_rows,
-                   P[1].pconvlayer->out_cols,
-                   P[1].pconvlayer->out_batch,
+    pool_withlayer(P[1].pconv_layer->pout,
+                   P[1].pconv_layer->out_rows,
+                   P[1].pconv_layer->out_cols,
+                   P[1].pconv_layer->out_batch,
                    P[2].ppool_layer, MAX_POOL_STRIDE );
 
     printf("pool rows:%d\tpool cols:%d pool batch:%d\n",
@@ -196,19 +196,19 @@ void initNet()
     /*P[2].ppool_layer->out_cols, 31);*/
 
     conv2d_withlayer(P[2].ppool_layer->poolout, P[2].ppool_layer->out_rows,
-                     P[2].ppool_layer->out_cols, P[2].ppool_layer->pl_batch, P[3].pconvlayer);
+                     P[2].ppool_layer->out_cols, P[2].ppool_layer->pl_batch, P[3].pconv_layer);
     printf("conv2 rows:%d\tconv cols:%d  batch:%d\n",
-           P[3].pconvlayer->out_rows,
-           P[3].pconvlayer->out_cols,
-           P[3].pconvlayer->out_batch);
+           P[3].pconv_layer->out_rows,
+           P[3].pconv_layer->out_cols,
+           P[3].pconv_layer->out_batch);
     /*logpr(P[3].pconvlayer->pout,*/
     /*P[3].pconvlayer->out_rows,*/
     /*P[3].pconvlayer->out_cols, 6);*/
 
-    pool_withlayer(P[3].pconvlayer->pout,
-                   P[3].pconvlayer->out_rows,
-                   P[3].pconvlayer->out_cols,
-                   P[3].pconvlayer->out_batch,
+    pool_withlayer(P[3].pconv_layer->pout,
+                   P[3].pconv_layer->out_rows,
+                   P[3].pconv_layer->out_cols,
+                   P[3].pconv_layer->out_batch,
                    P[4].ppool_layer, MAX_POOL_STRIDE );
 
     printf("pool2 rows:%d\tpool cols:%d pool batch:%d\n",
@@ -229,21 +229,19 @@ void initNet()
 
     /*printf("\n\n\n");*/
     /*for(uint32_t i = 0; i < 100; i++) {*/
-        /*printf("%5.3f ",P[6].pdrop_layer->drop_out[i]);*/
+    /*printf("%5.3f ",P[6].pdrop_layer->drop_out[i]);*/
     /*}*/
     /*printf("\n\n\n");*/
 
     /*core_forward(P, 2, 0.01);*/
-
-    destory_fclayer(P[7].pout_layer);
-    destory_droplayer(P[6].pdrop_layer);
-    destory_fclayer(P[5].pfc_layer);
-    destory_poollayer(P[4].ppool_layer);
-    destory_convlayer(P[3].pconvlayer);
-    destory_poollayer(P[2].ppool_layer);
-    destory_convlayer(P[1].pconvlayer);
-    destory_inputlayer(P[0].pinputlayer);
-    /*SAFEFREE(P[1]->pconv_filter);*/
+    destory_layer(&P[7]);
+    destory_layer(&P[6]);
+    destory_layer(&P[5]);
+    destory_layer(&P[4]);
+    destory_layer(&P[3]);
+    destory_layer(&P[2]);
+    destory_layer(&P[1]);
+    destory_layer(&P[0]);
 }
 
 

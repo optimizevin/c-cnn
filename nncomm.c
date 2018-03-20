@@ -258,7 +258,7 @@ inline void subsampling_fun(float_t *src, uint32_t rows, uint32_t cols, uint32_t
 }
 
 
-inline float_t reduce_ment(const float_t *src, const uint32_t len)
+inline float_t reduce_mean(const float_t *src, const uint32_t len)
 {
     float_t ret = 0.f;
     for(uint32_t i = 0 ; i < len; i++) {

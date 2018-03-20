@@ -104,7 +104,7 @@ void  test_softmax()
     float_t blabel[] = {0.2, 0.3, 0.5, 0.1, 0.6, 0.3};
     float_t out[2] ;
     softMax_cross_entropy_with_logits(blabel, b, 2, 3, out);
-    printf("%0.6f\t%0.6f  reduce:%0.6f\n", out[0], out[1], reduce_ment(out, 2));
+    printf("%0.6f\t%0.6f  reduce:%0.6f\n", out[0], out[1], reduce_mean(out, 2));
 
     float_t pb[] = {3.0, 1.0, 0.2, 5.0, 7.12, 10.0};
     softMax(pb, 6);
@@ -150,19 +150,20 @@ void initNet()
     union store_layer P[8];
 #define  CONVERLAYER_1_BATCH  8
 #define  MAX_POOL_STRIDE  2
+#define  BIAS  0.1f
 
-    P[0].pinput_layer = create_inputlayer("input", pint_img, 28, 28, 20 , 0.5, 0.8);
+    P[0].pinput_layer = create_inputlayer("input", pint_img, 28, 28, 20 ,  0.8);
     /*logpr(P[0].pinputlayer->neu,*/
     /*P[0].pinputlayer->in_rows,*/
     /*P[0].pinputlayer->in_cols, 0);*/
 
-    P[1].pconv_layer = create_convlayer("conv1", 7, 7, CONVERLAYER_1_BATCH, 0.5, 0.8);
+    P[1].pconv_layer = create_convlayer("conv1", 7, 7, CONVERLAYER_1_BATCH, BIAS, 0.8);
     /*28-7+1 = 22*/
     P[2].ppool_layer = create_poollayer("pool", 5, 5);
-    P[3].pconv_layer = create_convlayer("conv2", 3, 3, CONVERLAYER_1_BATCH, 0.5, 0.8);
+    P[3].pconv_layer = create_convlayer("conv2", 3, 3, CONVERLAYER_1_BATCH, BIAS, 0.8);
     P[4].ppool_layer = create_poollayer("pool2", 2, 2);
-    P[5].pfc_layer = create_fully_connected_layer("fully connection");
-    P[6].pdrop_layer = create_dropout_layer("dropout layer");
+    P[5].pdrop_layer = create_dropout_layer("dropout layer",4,4,256);
+    P[6].pfc_layer = create_fully_connected_layer("fully connection");
     P[7].poutput_layer = create_output_layer("output layer",10);
 
     conv2d_withlayer(P[0].pinput_layer->neu, 28, 28, 4, P[1].pconv_layer);
@@ -216,16 +217,22 @@ void initNet()
            P[4].ppool_layer->out_cols,
            P[4].ppool_layer->pl_batch);
 
-    fully_connected( P[4].ppool_layer->poolout,
-                     P[4].ppool_layer->out_rows,
-                     P[4].ppool_layer->out_cols,
-                     P[4].ppool_layer->pl_batch,
-                     P[5].pfc_layer, 84);
+    //下采样提前，修改P层数
+    dropout_layer( P[4].ppool_layer->poolout,
+                   P[4].ppool_layer->out_rows,
+                   P[4].ppool_layer->out_cols,
+                   P[4].ppool_layer->pl_batch,
+                   P[5].pdrop_layer);
 
+    //全连接，计算权职加上bias
+    fully_connected( P[5].pdrop_layer->drop_out,
+                     P[5].pdrop_layer->out_rows,
+                     P[5].pdrop_layer->out_cols,
+                     P[5].pdrop_layer->drop_batch,
+                     P[6].pfc_layer, 84);
+ 
+/*http://blog.csdn.net/l494926429/article/details/51479672*/
 
-    dropout_layer( P[5].pfc_layer->neu,
-                   P[5].pfc_layer->size,
-                   P[6].pdrop_layer);
 
     /*printf("\n\n\n");*/
     /*for(uint32_t i = 0; i < 100; i++) {*/

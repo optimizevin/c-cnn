@@ -93,7 +93,7 @@ inline void subsampling_fun(float_t *src, uint32_t rows, uint32_t cols, uint32_t
 
 inline float_t Relu(const float_t *pf, uint32_t len);
 inline void dropout(const float_t *src, const uint32_t len, float_t keep_prob, float_t *out);
-inline float_t reduce_ment(const float_t *src, const uint32_t len);
+inline float_t reduce_mean(const float_t *src, const uint32_t len);
 inline void softMax(float_t *src, uint32_t size);
 inline void softMax_cross_entropy_with_logits(const float_t *labels, const float_t *logits, 
         uint32_t rows, uint32_t cols,float_t *pOut);

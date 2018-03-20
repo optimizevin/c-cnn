@@ -73,7 +73,6 @@ struct input_layer {
     uint32_t nenum;
     uint32_t  in_rows;
     uint32_t  in_cols;
-    float_t bias;
     float_t *neu;
 };
 
@@ -110,7 +109,9 @@ struct fc_layer {
 
 struct dropout_layer {
     struct base_layer base;
-    uint32_t  size;
+    uint32_t  out_rows;
+    uint32_t  out_cols;
+    uint32_t  drop_batch;
     float_t *drop_out;
 };
 
@@ -141,17 +142,17 @@ inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t dat
                            struct pool_layer *ppool_layer, uint32_t  stride);
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t cols, uint32_t rows,
-                                      const uint32_t batch, float_t bias, float_t stddev);
+                                      const uint32_t batch, float_t stddev);
 struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t rows, uint32_t batch,
                                     float_t bias, float_t stddev);
 
 struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t rows);
 
 struct fc_layer* create_fully_connected_layer(const char*pstr);
-struct dropout_layer* create_dropout_layer(const char*pstr);
+struct dropout_layer* create_dropout_layer(const char*pstr,uint32_t rows, uint32_t cols,uint32_t batch);
 struct output_layer* create_output_layer(const char*pstr,uint32_t neunum);
 
-inline void dropout_layer(float_t *pdata, uint32_t neunum, struct dropout_layer *pdrop_layer);
+inline void dropout_layer(float_t *pdata, uint32_t rows, uint32_t cols,uint32_t batch,struct dropout_layer *pdrop_layer);
 
 inline  void fully_connected(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
                              struct fc_layer *pfc_layer, uint32_t neunum);

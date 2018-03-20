@@ -179,7 +179,7 @@ inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t dat
 
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t cols, uint32_t rows,
-                                      const uint32_t batch, float_t bias, float_t stddev)
+                                      const uint32_t batch,float_t stddev)
 {
     assert(pdata != NULL);
     struct input_layer* ret = NULL;
@@ -190,7 +190,6 @@ struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, ui
     strcpy(ret->base.layerName, pstr);
     ret->in_cols = cols;
     ret->in_rows = rows;
-    ret->bias = bias;
     ret->nenum = fullsize;
 
     ret->neu = (float_t*)calloc(fullsize * sizeof(float_t), 1);
@@ -245,11 +244,15 @@ inline  void fully_connected(float_t *pdata, uint32_t data_rows, uint32_t data_c
     }
 }
 
-struct dropout_layer* create_dropout_layer(const char*pstr)
+struct dropout_layer* create_dropout_layer(const char*pstr,uint32_t rows, uint32_t cols,uint32_t batch)
 {
     struct  dropout_layer * ret = (struct dropout_layer*)calloc(sizeof(struct dropout_layer), 1);
     ret->base.laytype = LAY_DROPOUT;
     strcpy(ret->base.layerName, pstr);
+    ret->out_rows = rows;
+    ret->out_cols = cols;
+    ret->drop_batch = batch;
+    ret->drop_out = (float_t*)calloc(cols * rows * batch * sizeof(float_t), 1);
     return ret;
 }
 
@@ -264,11 +267,9 @@ struct output_layer* create_output_layer(const char*pstr,uint32_t neunum)
 }
 
 
-inline void dropout_layer(float_t *pdata, uint32_t neunum, struct dropout_layer *pdrop_layer)
+inline void dropout_layer(float_t *pdata, uint32_t rows, uint32_t cols,uint32_t batch,struct dropout_layer *pdrop_layer)
 {
-    pdrop_layer->size = neunum;
-    pdrop_layer->drop_out = (float_t*)calloc(sizeof(float_t) * neunum, 1);
-    dropout((const float_t*)pdata, neunum, 0.5, pdrop_layer->drop_out);
+    dropout((const float_t*)pdata, rows*cols*batch, 0.5, pdrop_layer->drop_out);
 }
 
 

@@ -62,11 +62,6 @@
 
 inline float_t sigmoid(const float_t x);
 
-struct  notelist {
-    struct notelist* pNext;
-};
-
-
 
 typedef  void(*pFun_Pooll)(float_t *, uint32_t , uint32_t , uint32_t , float_t*);
 

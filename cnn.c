@@ -109,10 +109,10 @@ inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_c
                               struct conv_layer *pconv_layer)
 {
     assert(pneu != NULL);
-    if(pconv_layer->pout == NULL) {
+    if(pconv_layer->conv_out == NULL) {
         uint32_t cols = data_cols - pconv_layer->fl_cols + 1;
         uint32_t rows = data_rows - pconv_layer->fl_rows + 1;
-        pconv_layer->pout = (float_t*)calloc(data_batch * cols * rows * pconv_layer->fl_batch * sizeof(float_t), 1);
+        pconv_layer->conv_out = (float_t*)calloc(data_batch * cols * rows * pconv_layer->fl_batch * sizeof(float_t), 1);
         pconv_layer->out_batch = data_batch * pconv_layer->fl_batch;
     }
 
@@ -126,7 +126,7 @@ inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_c
     pconv_layer->out_cols = nbox_cols;
 
     float_t (*pout)[nbox_rows][nbox_cols] =
-        (float_t(*)[nbox_rows][nbox_cols])pconv_layer->pout;
+        (float_t(*)[nbox_rows][nbox_cols])pconv_layer->conv_out;
 
 
     float_t *pdata = pneu;
@@ -151,9 +151,9 @@ inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t dat
 {
     assert(ppool_layer);
 
-    if(ppool_layer->poolout) {
-        free(ppool_layer->poolout);
-        ppool_layer->poolout =  NULL;
+    if(ppool_layer->pool_out) {
+        free(ppool_layer->pool_out);
+        ppool_layer->pool_out =  NULL;
     }
     uint32_t  out_rows = 0;
     uint32_t  out_cols = 0;
@@ -167,11 +167,11 @@ inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t dat
     ppool_layer->out_rows = out_rows;
     ppool_layer->out_cols = out_cols;
 
-    ppool_layer->poolout = (float_t*)calloc(out_rows * out_cols * batch * sizeof(float_t) , 1);
+    ppool_layer->pool_out = (float_t*)calloc(out_rows * out_cols * batch * sizeof(float_t) , 1);
     for(uint32_t i = 0; i < batch; i++) {
         uint32_t offset = out_rows * out_cols * i ;
         max_pool(pData + offset, data_rows, data_cols, ppool_layer->pl_rows,
-                 ppool_layer->pl_cols, stride, ppool_layer->poolout + offset);
+                 ppool_layer->pl_cols, stride, ppool_layer->pool_out + offset);
     }
     ppool_layer->pl_batch =  batch;
 
@@ -179,7 +179,7 @@ inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t dat
 
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t cols, uint32_t rows,
-                                      const uint32_t batch,float_t stddev)
+                                      const uint32_t batch, const uint32_t *plabel, float_t stddev)
 {
     assert(pdata != NULL);
     struct input_layer* ret = NULL;
@@ -192,9 +192,26 @@ struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, ui
     ret->in_rows = rows;
     ret->nenum = fullsize;
 
-    ret->neu = (float_t*)calloc(fullsize * sizeof(float_t), 1);
-    for(uint32_t i = 0; i < fullsize; i++) {
-        ret->neu[i] = pdata[i];
+    ret->pdata = (float_t*)calloc(fullsize * sizeof(float_t), 1);
+    ret->pvalue = (uint32_t*)calloc(fullsize * sizeof(uint32_t), 1);
+
+    uint32_t i = 0;
+    uint32_t limit = fullsize - 3;
+
+    for( i = 0; i < limit; i += 4 ) {
+        ret->pdata[i] = pdata[i];
+        ret->pdata[i + 1] = pdata[i + 1];
+        ret->pdata[i + 2] = pdata[i + 2];
+        ret->pdata[i + 3] = pdata[i + 3];
+        ret->pvalue[i] = plabel[i];
+        ret->pvalue[i + 1] = plabel[i + 1];
+        ret->pvalue[i + 2] = plabel[i + 2];
+        ret->pvalue[i + 3] = plabel[i + 3];
+    }
+
+    for(; i < fullsize; i++) {
+        ret->pdata[i] = pdata[i];
+        ret->pvalue[i] = plabel[i];
     }
 
     return ret;
@@ -218,33 +235,68 @@ struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t ro
 }
 
 
-struct fc_layer* create_fully_connected_layer(const char*pstr)
+struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, float_t bias)
 {
     struct  fc_layer * ret = (struct fc_layer*)calloc(sizeof(struct fc_layer), 1);
     ret->base.laytype = LAY_FULLYCONNECT;
     strcpy(ret->base.layerName, pstr);
+    ret->neunum = neunum;
+    if(ret->neu == NULL) {
+        ret->neu = (float_t*)calloc(sizeof(float_t) * neunum, 1);
+    }
+    if(ret->weight == NULL) {
+        ret->weight = (float_t*)calloc(sizeof(float_t) * neunum, 1);
+    }
+    ret->bias = bias;
     return ret;
 }
 
-inline  void fully_connected(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
-                             struct fc_layer *pfc_layer, uint32_t neunum)
+inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
+                                  float_t *pweight, float_t bias, float_t *pout)
 {
     assert(pdata != NULL);
-    const uint32_t fullsize = data_cols * data_rows * data_batch;
-    if(pfc_layer->neu == NULL) {
-        pfc_layer->neu = (float_t*)calloc(sizeof(float_t) * fullsize, 1);
+    float_t (*pd)[data_rows][data_cols] =
+        (float_t(*)[data_rows][data_cols])pdata;
+
+    float_t tmp = 0.f;
+    uint32_t step = 0;
+    for(uint32_t db = 0; db < data_batch; db++) {
+        for(uint32_t i = 0; i < data_rows; i++) {
+            for(uint32_t j = 0; j < data_cols; j++) {
+                tmp += (*pd)[i][j] * pweight[step];
+            }
+        }
+        pout[step] = Relu_def(tmp + bias);
+        tmp = 0.f;
+        pd++;
+        step++;
     }
-    memcpy(pfc_layer->neu, pdata, fullsize);
-    pfc_layer->size = fullsize;
-    if(pfc_layer->weight == NULL) {
-        pfc_layer->weight = (float_t*)calloc(sizeof(float_t) * neunum, 1);
-    }
-    for(uint32_t  i = 0; i < neunum; i++) {
-        pfc_layer->weight[i] =  generateGaussianNoise(0.5f, 0.8f);
-    }
+
 }
 
-struct dropout_layer* create_dropout_layer(const char*pstr,uint32_t rows, uint32_t cols,uint32_t batch)
+
+inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_t data_cols,
+                                     uint32_t data_batch, struct fc_layer *pfc_layer)
+{
+    assert(pdata != NULL);
+    fully_connected_data(pdata, data_rows, data_cols, data_batch,
+                         pfc_layer->weight, pfc_layer->bias, pfc_layer->neu);
+}
+
+inline  void forward_proc()
+{
+    /*y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2*/
+
+    /*cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv))*/
+    /*train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)*/
+
+
+    /*float_t out[2] ;*/
+    /*softMax_cross_entropy_with_logits(blabel, b, 2, 3, out);*/
+    /*reduece_mean(pfc_layer->neu);*/
+}
+
+struct dropout_layer* create_dropout_layer(const char*pstr, uint32_t rows, uint32_t cols, uint32_t batch)
 {
     struct  dropout_layer * ret = (struct dropout_layer*)calloc(sizeof(struct dropout_layer), 1);
     ret->base.laytype = LAY_DROPOUT;
@@ -256,20 +308,21 @@ struct dropout_layer* create_dropout_layer(const char*pstr,uint32_t rows, uint32
     return ret;
 }
 
-struct output_layer* create_output_layer(const char*pstr,uint32_t neunum)
+struct output_layer* create_output_layer(const char*pstr, uint32_t neunum)
 {
     struct  output_layer * ret = (struct output_layer*)calloc(sizeof(struct output_layer), 1);
     ret->base.laytype = LAY_OUTPUT;
     strcpy(ret->base.layerName, pstr);
     ret->size = neunum;
-    ret->output = (float_t*)calloc(neunum*sizeof(float_t),1);
+    ret->output = (float_t*)calloc(neunum * sizeof(float_t), 1);
     return ret;
 }
 
 
-inline void dropout_layer(float_t *pdata, uint32_t rows, uint32_t cols,uint32_t batch,struct dropout_layer *pdrop_layer)
+inline void dropout_layer(float_t *pdata, uint32_t rows, uint32_t cols, uint32_t batch, struct dropout_layer *pdrop_layer)
 {
-    dropout((const float_t*)pdata, rows*cols*batch, 0.5, pdrop_layer->drop_out);
+    /*printf("drop len = %d\n",rows*cols*batch);*/
+    /*dropout((const float_t*)pdata, rows * cols * batch, 0.5, pdrop_layer->drop_out);*/
 }
 
 
@@ -287,8 +340,8 @@ void destory_layer(union store_layer *player)
 {
     switch(player->pconv_layer->base.laytype) {
     case  LAY_INPUT: {
-        if(player->pinput_layer->neu) {
-            free(player->pinput_layer->neu);
+        if(player->pinput_layer->pdata) {
+            free(player->pinput_layer->pdata);
         }
         free(player->pinput_layer);
     }
@@ -301,8 +354,8 @@ void destory_layer(union store_layer *player)
     }
     break;
     case  LAY_POOL: {
-        if(player->ppool_layer->poolout) {
-            free(player->ppool_layer->poolout);
+        if(player->ppool_layer->pool_out) {
+            free(player->ppool_layer->pool_out);
         }
         free(player->ppool_layer);
     }

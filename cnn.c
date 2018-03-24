@@ -257,7 +257,6 @@ inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t d
     float_t (*pd)[data_rows][data_cols] =
         (float_t(*)[data_rows][data_cols])pdata;
 
-
     float_t tmp = 0.f;
     uint32_t step = 0;
     for(uint32_t db = 0; db < data_batch; db++) {
@@ -315,6 +314,11 @@ struct dropout_layer* create_dropout_layer(const char*pstr, uint32_t rows, uint3
     return ret;
 }
 
+inline void dropout_layer(float_t *pdata, uint32_t rows, uint32_t cols, uint32_t batch, struct dropout_layer *pdrop_layer)
+{
+    dropout((const float_t*)pdata, rows * cols * batch, 0.5, pdrop_layer->drop_out);
+}
+
 struct output_layer* create_output_layer(const char*pstr, uint32_t neunum)
 {
     struct  output_layer * ret = (struct output_layer*)calloc(sizeof(struct output_layer), 1);
@@ -326,11 +330,6 @@ struct output_layer* create_output_layer(const char*pstr, uint32_t neunum)
 }
 
 
-inline void dropout_layer(float_t *pdata, uint32_t rows, uint32_t cols, uint32_t batch, struct dropout_layer *pdrop_layer)
-{
-    /*printf("drop len = %d\n",rows*cols*batch);*/
-    /*dropout((const float_t*)pdata, rows * cols * batch, 0.5, pdrop_layer->drop_out);*/
-}
 
 
 struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t rows)

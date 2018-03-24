@@ -171,9 +171,9 @@ void initNet()
     P[2].ppool_layer = create_poollayer("pool", 5, 5);
     P[3].pconv_layer = create_convlayer("conv2", 3, 3, FILTER_CORE_BATCH, BIAS, 0.8);
     P[4].ppool_layer = create_poollayer("pool2", 2, 2);
-    P[5].pfc_layer = create_fully_connected_layer("fully connection 1/2", 4 * 4 * 64, 0.5f);
-    P[6].pdrop_layer = create_dropout_layer("dropout layer 2", 4, 4, 4 * 4 * 64);
-    P[7].pfc_layer = create_fully_connected_layer("fully connection 2/2", 4 * 4 * 64, 0.5f);
+    P[5].pfc_layer = create_fully_connected_layer("fully connection 1/2", 64, 0.5f);
+    P[6].pdrop_layer = create_dropout_layer("dropout layer 2", 1, 1, 64);
+    P[7].pfc_layer = create_fully_connected_layer("fully connection 2/2", 64, 0.5f);
     P[8].poutput_layer = create_output_layer("output layer", 10);
 
     conv2d_withlayer(P[0].pinput_layer->pdata, 28, 28, 1, P[1].pconv_layer);
@@ -229,8 +229,8 @@ void initNet()
            P[4].ppool_layer->out_batch);
 
     /*logpr(P[4].ppool_layer->pool_out,*/
-          /*P[4].ppool_layer->out_rows,*/
-          /*P[4].ppool_layer->out_cols, 0);*/
+    /*P[4].ppool_layer->out_rows,*/
+    /*P[4].ppool_layer->out_cols, 0);*/
 
 
     fully_connected_fclayer( P[4].ppool_layer->pool_out,
@@ -241,33 +241,31 @@ void initNet()
 
     printf("%s neunum:%4d\n", P[5].pfc_layer->base.layerName,
            P[5].pfc_layer->neunum);
-    /*logpr(P[5].pfc_layer->neu,*/
-    /*1, P[5].pfc_layer->neunum, 0);*/
+    logpr(P[5].pfc_layer->neu,
+    1, P[5].pfc_layer->neunum, 0);
 
     dropout_layer( P[5].pfc_layer->neu,
+                   1, 1,
                    P[5].pfc_layer->neunum,
-                   1,
-                   1,
                    P[6].pdrop_layer);
-    printf("dropout rows:%4d  dropout cols:%4d\tdroplayer batch:%4d\n",
+    printf("\ndropout rows:%4d  dropout cols:%4d\tdroplayer batch:%4d\n",
            P[6].pdrop_layer->out_rows,
            P[6].pdrop_layer->out_cols,
            P[6].pdrop_layer->drop_batch);
 
-    ///*logpr(P[5].pdrop_layer->drop_out,*/
-    /*P[5].pdrop_layer->out_rows,*/
-    /*P[5].pdrop_layer->out_cols, 126);*/
+    logpr(P[6].pdrop_layer->drop_out,
+          1,
+          64, 0);
 
     fully_connected_fclayer( P[6].pdrop_layer->drop_out,
-                             P[6].pdrop_layer->out_rows,
-                             P[6].pdrop_layer->out_cols,
+                             1, 1,
                              P[6].pdrop_layer->drop_batch,
                              P[7].pfc_layer);
 
-    printf("%s neunum:%4d\n", P[7].pfc_layer->base.layerName,
+    printf("\n%s neunum:%4d\n", P[7].pfc_layer->base.layerName,
            P[7].pfc_layer->neunum);
-    /*logpr(P[7].pfc_layer->neu,*/
-    /*1, P[7].pfc_layer->neunum, 0);*/
+    logpr(P[7].pfc_layer->neu,
+          1, P[7].pfc_layer->neunum, 0);
 
     /*printf("\n\n\n");*/
     /*for(uint32_t i = 0; i < 100; i++) {*/

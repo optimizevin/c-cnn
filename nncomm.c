@@ -167,6 +167,7 @@ inline void dropout(const float_t *src, const uint32_t len, float_t keep_prob, f
         float_t tmp = (rand() / ((float_t)RAND_MAX)) ;
         (tmp > (1 - keep_prob)) ? (out[i] = src[i]) : (out[i] = 0);
     }
+
 }
 
 

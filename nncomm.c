@@ -319,8 +319,7 @@ inline void softMax_cross_entropy_with_logits(const float_t *labels, const float
     const  uint32_t bsize = sizeof(tmp) / sizeof(tmp[0]);
     foreach_log(tmp, bsize);
 
-    float_t bout[bsize] ;
-    /*memset(bout, 0x0, bsize);*/
+    float_t bout[bsize];
     for(uint32_t i = 0; i < bsize; i++) {
         bout[i] = tmp[i] * labels[i];
     }

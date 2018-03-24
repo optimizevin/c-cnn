@@ -112,7 +112,7 @@ void  test_softmax()
     softMax(pb, 6);
     printf("softMax:\n");
     for(int i = 0; i < 6; i++) {
-        printf("%5.6f\t", pb[i]);
+        printf("%5.6f\n", pb[i]);
     }
     printf("\n");
 
@@ -161,7 +161,7 @@ void initNet()
     /*for(int i=0;i<20;i++){*/
     /*printf("label:%d\n",pint_label[i]);*/
     /*}*/
-    P[0].pinput_layer = create_inputlayer("input", pint_img, 28, 28, 1 , pint_label, 0.8);
+    P[0].pinput_layer = create_inputlayer("input", pint_img, 28, 28, pint_label[0]);
     /*logpr(P[0].pinput_layer->pdata,*/
     /*P[0].pinput_layer->in_rows,*/
     /*P[0].pinput_layer->in_cols, 19);*/
@@ -171,9 +171,9 @@ void initNet()
     P[2].ppool_layer = create_poollayer("pool", 5, 5);
     P[3].pconv_layer = create_convlayer("conv2", 3, 3, FILTER_CORE_BATCH, BIAS, 0.8);
     P[4].ppool_layer = create_poollayer("pool2", 2, 2);
-    P[5].pfc_layer = create_fully_connected_layer("fully connection 1/2", 4*4*64, 0.5f);
-    P[6].pdrop_layer = create_dropout_layer("dropout layer 2", 4, 4, 4*4*64);
-    P[7].pfc_layer = create_fully_connected_layer("fully connection 2/2", 4*4*64, 0.5f);
+    P[5].pfc_layer = create_fully_connected_layer("fully connection 1/2", 4 * 4 * 64, 0.5f);
+    P[6].pdrop_layer = create_dropout_layer("dropout layer 2", 4, 4, 4 * 4 * 64);
+    P[7].pfc_layer = create_fully_connected_layer("fully connection 2/2", 4 * 4 * 64, 0.5f);
     P[8].poutput_layer = create_output_layer("output layer", 10);
 
     conv2d_withlayer(P[0].pinput_layer->pdata, 28, 28, 1, P[1].pconv_layer);
@@ -194,7 +194,7 @@ void initNet()
     pool_withlayer(P[1].pconv_layer->conv_out,
                    P[1].pconv_layer->out_rows,
                    P[1].pconv_layer->out_cols,
-                   P[1].pconv_layer->fl_batch,
+                   P[1].pconv_layer->out_batch,
                    P[2].ppool_layer, MAX_POOL_STRIDE );
 
     printf("pool1 rows:%4d\tpool cols:%4d\tpool batch:%4d\n",
@@ -222,10 +222,15 @@ void initNet()
                    P[3].pconv_layer->out_batch,
                    P[4].ppool_layer, MAX_POOL_STRIDE );
 
+
     printf("pool2 rows:%4d\tpool cols:%4d\tpool batch:%4d\n",
            P[4].ppool_layer->out_rows,
            P[4].ppool_layer->out_cols,
            P[4].ppool_layer->out_batch);
+
+    /*logpr(P[4].ppool_layer->pool_out,*/
+          /*P[4].ppool_layer->out_rows,*/
+          /*P[4].ppool_layer->out_cols, 0);*/
 
 
     fully_connected_fclayer( P[4].ppool_layer->pool_out,
@@ -236,6 +241,8 @@ void initNet()
 
     printf("%s neunum:%4d\n", P[5].pfc_layer->base.layerName,
            P[5].pfc_layer->neunum);
+    /*logpr(P[5].pfc_layer->neu,*/
+    /*1, P[5].pfc_layer->neunum, 0);*/
 
     dropout_layer( P[5].pfc_layer->neu,
                    P[5].pfc_layer->neunum,
@@ -252,13 +259,15 @@ void initNet()
     /*P[5].pdrop_layer->out_cols, 126);*/
 
     fully_connected_fclayer( P[6].pdrop_layer->drop_out,
-                     P[6].pdrop_layer->out_rows,
-                     P[6].pdrop_layer->out_cols,
-                     P[6].pdrop_layer->drop_batch,
-                     P[7].pfc_layer);
+                             P[6].pdrop_layer->out_rows,
+                             P[6].pdrop_layer->out_cols,
+                             P[6].pdrop_layer->drop_batch,
+                             P[7].pfc_layer);
 
     printf("%s neunum:%4d\n", P[7].pfc_layer->base.layerName,
            P[7].pfc_layer->neunum);
+    /*logpr(P[7].pfc_layer->neu,*/
+    /*1, P[7].pfc_layer->neunum, 0);*/
 
     /*printf("\n\n\n");*/
     /*for(uint32_t i = 0; i < 100; i++) {*/

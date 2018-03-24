@@ -74,7 +74,7 @@ struct input_layer {
     uint32_t  in_rows;
     uint32_t  in_cols;
     float_t  *pdata;
-    uint32_t *pvalue;
+    uint32_t  value;
 };
 
 struct conv_layer {
@@ -144,7 +144,7 @@ inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t dat
                            struct pool_layer *ppool_layer, uint32_t  stride);
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t cols, uint32_t rows,
-                                      const uint32_t batch, const uint32_t *plabel, float_t stddev);
+                                      const uint32_t label);
 struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t rows, uint32_t batch,
                                     float_t bias, float_t stddev);
 
@@ -160,7 +160,7 @@ inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t d
                                   float_t *pweight, float_t bias, float_t *pout);
 inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_t data_cols,
                                      uint32_t data_batch, struct fc_layer *pfc_layer);
-inline  void forward_proc(uint32_t *plabel,struct output_layer * pout);
+inline  void forward_proc(uint32_t lable,struct output_layer * pout);
 
 void destory_layer(union store_layer *player);
 

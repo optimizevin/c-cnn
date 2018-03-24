@@ -179,11 +179,11 @@ inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t dat
 
 
 struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t cols, uint32_t rows,
-                                      const uint32_t batch, const uint32_t *plabel, float_t stddev)
+                                      const uint32_t label)
 {
     assert(pdata != NULL);
     struct input_layer* ret = NULL;
-    const uint32_t fullsize = cols * rows * batch;
+    const uint32_t fullsize = cols * rows ;
 
     ret = (struct input_layer*)calloc(sizeof(struct input_layer), 1);
     ret->base.laytype = LAY_INPUT;
@@ -193,7 +193,7 @@ struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, ui
     ret->nenum = fullsize;
 
     ret->pdata = (float_t*)calloc(fullsize * sizeof(float_t), 1);
-    ret->pvalue = (uint32_t*)calloc(fullsize * sizeof(uint32_t), 1);
+    ret->value = label;
 
     uint32_t i = 0;
     uint32_t limit = fullsize - 3;
@@ -203,15 +203,10 @@ struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, ui
         ret->pdata[i + 1] = pdata[i + 1];
         ret->pdata[i + 2] = pdata[i + 2];
         ret->pdata[i + 3] = pdata[i + 3];
-        ret->pvalue[i] = plabel[i];
-        ret->pvalue[i + 1] = plabel[i + 1];
-        ret->pvalue[i + 2] = plabel[i + 2];
-        ret->pvalue[i + 3] = plabel[i + 3];
     }
 
     for(; i < fullsize; i++) {
         ret->pdata[i] = pdata[i];
-        ret->pvalue[i] = plabel[i];
     }
 
     return ret;
@@ -247,6 +242,10 @@ struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, 
     if(ret->weight == NULL) {
         ret->weight = (float_t*)calloc(sizeof(float_t) * neunum, 1);
     }
+
+    for(uint32_t  i = 0; i < neunum; i++) {
+        ret->weight[i] =  generateGaussianNoise(0.5f, 0.8f);
+    }
     ret->bias = bias;
     return ret;
 }
@@ -257,6 +256,7 @@ inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t d
     assert(pdata != NULL);
     float_t (*pd)[data_rows][data_cols] =
         (float_t(*)[data_rows][data_cols])pdata;
+
 
     float_t tmp = 0.f;
     uint32_t step = 0;
@@ -283,8 +283,14 @@ inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_
                          pfc_layer->weight, pfc_layer->bias, pfc_layer->neu);
 }
 
-inline  void forward_proc(uint32_t *plabel,struct output_layer * pout)
+inline  void forward_proc(uint32_t label, struct output_layer * pout)
 {
+    static int labelarray[10] = {0};
+    assert(label < 10 && label >= 0);
+    labelarray[label + 1] = 1;
+
+    /*softMax_cross_entropy_with_logits(blabel, b, 2, 3, out);*/
+    /*softmax_cross_entropy_with_logits(labelarray,pout->output);*/
     /*y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2*/
 
     /*cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv))*/

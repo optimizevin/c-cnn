@@ -173,7 +173,7 @@ inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t dat
         max_pool(pData + offset, data_rows, data_cols, ppool_layer->pl_rows,
                  ppool_layer->pl_cols, stride, ppool_layer->pool_out + offset);
     }
-    ppool_layer->pl_batch =  batch;
+    ppool_layer->out_batch =  batch;
 
 }
 
@@ -283,7 +283,7 @@ inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_
                          pfc_layer->weight, pfc_layer->bias, pfc_layer->neu);
 }
 
-inline  void forward_proc()
+inline  void forward_proc(uint32_t *plabel,struct output_layer * pout)
 {
     /*y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2*/
 
@@ -291,9 +291,10 @@ inline  void forward_proc()
     /*train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)*/
 
 
+    /*cross_entropy = reduece_mean(softmax_cross_entropy_with_logits(label,fc->out);*/
     /*float_t out[2] ;*/
     /*softMax_cross_entropy_with_logits(blabel, b, 2, 3, out);*/
-    /*reduece_mean(pfc_layer->neu);*/
+    /*reduece_mean(pfc_layer->out);*/
 }
 
 struct dropout_layer* create_dropout_layer(const char*pstr, uint32_t rows, uint32_t cols, uint32_t batch)

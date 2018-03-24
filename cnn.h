@@ -97,7 +97,7 @@ struct pool_layer {
     uint32_t  pl_cols;
     uint32_t  out_rows;
     uint32_t  out_cols;
-    uint32_t  pl_batch;
+    uint32_t  out_batch;
     float_t *pool_out;
 };
 
@@ -160,7 +160,7 @@ inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t d
                                   float_t *pweight, float_t bias, float_t *pout);
 inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_t data_cols,
                                      uint32_t data_batch, struct fc_layer *pfc_layer);
-
+inline  void forward_proc(uint32_t *plabel,struct output_layer * pout);
 
 void destory_layer(union store_layer *player);
 

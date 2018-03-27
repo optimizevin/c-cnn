@@ -46,6 +46,8 @@
 #include <math.h>
 #include <float.h>
 
+#define  CLASS_LOOP 10
+
 void logpr(float_t* fd, int32_t rows, int32_t cols, int32_t dept)
 {
     float_t *pdata = fd + (rows * cols * dept);
@@ -149,7 +151,7 @@ inline  void conv2d_withlayer(float_t *pneu, uint32_t data_rows, uint32_t data_c
 inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t data_cols, uint32_t batch,
                            struct pool_layer *ppool_layer, uint32_t  stride)
 {
-    assert(ppool_layer);
+    assert(ppool_layer != NULL);
 
     if(ppool_layer->pool_out) {
         free(ppool_layer->pool_out);
@@ -178,10 +180,8 @@ inline void pool_withlayer(const float_t*pData, uint32_t data_rows, uint32_t dat
 }
 
 
-struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, uint32_t cols, uint32_t rows,
-                                      const uint32_t label)
+struct input_layer* create_inputlayer(const char* pstr, uint32_t cols, uint32_t rows)
 {
-    assert(pdata != NULL);
     struct input_layer* ret = NULL;
     const uint32_t fullsize = cols * rows ;
 
@@ -190,28 +190,34 @@ struct input_layer* create_inputlayer(const char* pstr, const float_t *pdata, ui
     strcpy(ret->base.layerName, pstr);
     ret->in_cols = cols;
     ret->in_rows = rows;
-    ret->nenum = fullsize;
 
     ret->pdata = (float_t*)calloc(fullsize * sizeof(float_t), 1);
-    ret->value = label;
-
-    uint32_t i = 0;
-    uint32_t limit = fullsize - 3;
-
-    for( i = 0; i < limit; i += 4 ) {
-        ret->pdata[i] = pdata[i];
-        ret->pdata[i + 1] = pdata[i + 1];
-        ret->pdata[i + 2] = pdata[i + 2];
-        ret->pdata[i + 3] = pdata[i + 3];
-    }
-
-    for(; i < fullsize; i++) {
-        ret->pdata[i] = pdata[i];
-    }
 
     return ret;
 }
 
+inline void load_inputlayer(struct input_layer *pinput, const float_t *pdata, const uint32_t label)
+{
+    assert(pinput != NULL);
+    assert(pdata != NULL);
+
+    const uint32_t fullsize = pinput->in_cols * pinput->in_rows ;
+    uint32_t i = 0;
+    uint32_t limit = fullsize - 3;
+
+    for( i = 0; i < limit; i += 4 ) {
+        pinput->pdata[i] = pdata[i];
+        pinput->pdata[i + 1] = pdata[i + 1];
+        pinput->pdata[i + 2] = pdata[i + 2];
+        pinput->pdata[i + 3] = pdata[i + 3];
+    }
+
+    for(; i < fullsize; i++) {
+        pinput->pdata[i] = pdata[i];
+    }
+    pinput->label = label;
+
+}
 
 
 struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t rows, uint32_t batch,
@@ -284,9 +290,6 @@ inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_
 
 inline  void forward_proc(uint32_t label, struct output_layer * pout)
 {
-    static int labelarray[10] = {0};
-    assert(label < 10 && label >= 0);
-    labelarray[label + 1] = 1;
 
     /*softMax_cross_entropy_with_logits(blabel, b, 2, 3, out);*/
     /*softmax_cross_entropy_with_logits(labelarray,pout->output);*/
@@ -319,17 +322,41 @@ inline void dropout_layer(float_t *pdata, uint32_t rows, uint32_t cols, uint32_t
     dropout((const float_t*)pdata, rows * cols * batch, 0.5, pdrop_layer->drop_out);
 }
 
-struct output_layer* create_output_layer(const char*pstr, uint32_t neunum)
+struct output_layer* create_output_layer(const char*pstr, uint32_t classnum)
 {
     struct  output_layer * ret = (struct output_layer*)calloc(sizeof(struct output_layer), 1);
     ret->base.laytype = LAY_OUTPUT;
     strcpy(ret->base.layerName, pstr);
-    ret->size = neunum;
-    ret->output = (float_t*)calloc(neunum * sizeof(float_t), 1);
+    ret->classnum = classnum;
+    ret->output = (float_t*)calloc(classnum * sizeof(float_t), 1);
+    ret->input = (float_t*)calloc(classnum * sizeof(float_t), 1);
     return ret;
 }
 
+inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label)
+{
+    assert(pfc_layer != NULL);
+    assert(pout_layer != NULL);
 
+    static float labelarray[10] = {0};
+    labelarray[label - 1] = 1.f;
+
+    for(uint32_t loop = 0; loop < CLASS_LOOP; loop++) {
+        pout_layer->input[loop] = 0.f;
+        pout_layer->output[loop] = 0.f;
+        float_t tmp = 0.f; 
+
+        for(uint32_t i = 0; i < pfc_layer->neunum; i++) {
+            tmp += pfc_layer->neu[i] * pfc_layer->weight[i];
+        }
+        pout_layer->input[loop] = Relu_def(tmp + pfc_layer->bias);
+    }
+
+    for(uint32_t loop = 0; loop < CLASS_LOOP; loop++) {
+        softMax_cross_entropy_with_logits(labelarray,
+                pout_layer->input, 1, 10, &pout_layer->output[loop]);
+    }
+}
 
 
 struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t rows)
@@ -386,6 +413,9 @@ void destory_layer(union store_layer *player)
     case  LAY_OUTPUT: {
         if(player->pout_layer->output) {
             free(player->pout_layer->output);
+        }
+        if(player->pout_layer->input) {
+            free(player->pout_layer->input);
         }
         free(player->pout_layer);
     }

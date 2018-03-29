@@ -46,7 +46,6 @@
 #include <math.h>
 #include <float.h>
 
-#define  CLASS_LOOP 10
 
 void logpr(float_t* fd, int32_t rows, int32_t cols, int32_t dept)
 {
@@ -236,23 +235,25 @@ struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t ro
 }
 
 
-struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, float_t bias)
+struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, uint32_t epoch, float_t bias)
 {
     struct  fc_layer * ret = (struct fc_layer*)calloc(sizeof(struct fc_layer), 1);
     ret->base.laytype = LAY_FULLYCONNECT;
     strcpy(ret->base.layerName, pstr);
     ret->neunum = neunum;
     if(ret->neu == NULL) {
-        ret->neu = (float_t*)calloc(sizeof(float_t) * neunum, 1);
+        ret->neu = (float_t*)calloc(sizeof(float_t) * neunum * epoch, 1);
     }
     if(ret->weight == NULL) {
-        ret->weight = (float_t*)calloc(sizeof(float_t) * neunum, 1);
+        ret->weight = (float_t*)calloc(sizeof(float_t) * neunum * epoch, 1);
     }
 
-    for(uint32_t  i = 0; i < neunum; i++) {
+    uint32_t fullsize = neunum * epoch;
+    for(uint32_t  i = 0; i < fullsize; i++) {
         ret->weight[i] =  generateGaussianNoise(0.5f, 0.8f);
     }
     ret->bias = bias;
+    ret->epoch = epoch;
     return ret;
 }
 
@@ -284,8 +285,10 @@ inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_
                                      uint32_t data_batch, struct fc_layer *pfc_layer)
 {
     assert(pdata != NULL);
-    fully_connected_data(pdata, data_rows, data_cols, data_batch,
-                         pfc_layer->weight, pfc_layer->bias, pfc_layer->neu);
+    for(uint32_t i = 0; i < pfc_layer->epoch; i++) {
+        fully_connected_data(pdata, data_rows, data_cols, data_batch,
+                             pfc_layer->weight + i * data_batch, pfc_layer->bias, pfc_layer->neu + i * data_batch);
+    }
 }
 
 inline  void forward_proc(uint32_t label, struct output_layer * pout)
@@ -328,7 +331,7 @@ struct output_layer* create_output_layer(const char*pstr, uint32_t classnum)
     ret->base.laytype = LAY_OUTPUT;
     strcpy(ret->base.layerName, pstr);
     ret->classnum = classnum;
-    ret->output = (float_t*)calloc(classnum * sizeof(float_t), 1);
+    ret->output = 0.f;
     ret->input = (float_t*)calloc(classnum * sizeof(float_t), 1);
     return ret;
 }
@@ -341,20 +344,20 @@ inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_
     static float labelarray[10] = {0};
     labelarray[label - 1] = 1.f;
 
-    for(uint32_t loop = 0; loop < CLASS_LOOP; loop++) {
+    for(uint32_t loop = 0; loop < pfc_layer->epoch; loop++) {
         pout_layer->input[loop] = 0.f;
-        pout_layer->output[loop] = 0.f;
-        float_t tmp = 0.f; 
+        float_t tmp = 0.f;
 
         for(uint32_t i = 0; i < pfc_layer->neunum; i++) {
-            tmp += pfc_layer->neu[i] * pfc_layer->weight[i];
+            tmp += pfc_layer->neu[i + loop * pfc_layer->epoch] * pfc_layer->weight[i + loop * pfc_layer->neunum];
         }
         pout_layer->input[loop] = Relu_def(tmp + pfc_layer->bias);
     }
 
-    for(uint32_t loop = 0; loop < CLASS_LOOP; loop++) {
+    MinMax(pout_layer->input, 1, 10);
+    for(uint32_t loop = 0; loop < pfc_layer->epoch; loop++) {
         softMax_cross_entropy_with_logits(labelarray,
-                pout_layer->input, 1, 10, &pout_layer->output[loop]);
+                                          pout_layer->input, 1, 10, &pout_layer->output);
     }
 }
 
@@ -369,7 +372,7 @@ struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t ro
     return ret;
 }
 
-void destory_layer(union store_layer *player)
+void destory_layer(union store_layer * player)
 {
     switch(player->pconv_layer->base.laytype) {
     case  LAY_INPUT: {
@@ -411,9 +414,6 @@ void destory_layer(union store_layer *player)
     }
     break;
     case  LAY_OUTPUT: {
-        if(player->pout_layer->output) {
-            free(player->pout_layer->output);
-        }
         if(player->pout_layer->input) {
             free(player->pout_layer->input);
         }

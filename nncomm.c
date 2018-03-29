@@ -280,26 +280,29 @@ inline void foreach_log(float_t *src, const uint32_t len)
 
 inline void softMax(float_t *src, uint32_t size)
 {
-    float_t mf = 0.f;
+    float_t mf = FLT_MIN;
+    float_t sm = 0.f;
     for(uint32_t i = 0; i < size; i++) {
-        mf += exp(src[i]);
+        mf = mf < src[i] ? src[i] : mf;
     }
     for(uint32_t i = 0; i < size; i++) {
-        src[i] = exp(src[i]) / mf;
+        sm += exp(src[i] - mf);
+    }
+    for(uint32_t i = 0; i < size; i++) {
+        src[i] = exp(src[i] - mf) / sm;
     }
 }
 
 static inline void softMax_cross(float_t *src, uint32_t rows, uint32_t cols)
 {
     for (uint32_t i = 0; i < rows; ++i) {
-        float_t max = 0.f;
+        float_t fmax = FLT_MIN;
         float_t sum = 0.f;
         for (uint32_t j = 0; j < cols; j++) {
-            if (max < src[j + i * cols])
-                max = src[j + i * cols];
+            fmax = fmax < src[j + i * cols] ? src[j + i * cols] : fmax;
         }
         for (uint32_t j = 0; j < cols; j++) {
-            src[j + i * cols] = exp(src[j + i * cols] - max);
+            src[j + i * cols] = exp(src[j + i * cols] - fmax);
             sum += src[j + i * cols];
         }
         for (uint32_t j = 0; j < cols; j++) {

@@ -102,21 +102,27 @@ void  test_softmax()
 {
     /*float_t b[] = {2.f, 0.5, 1.f, 0.1, 1.f, 3.f};*/
     /*float_t blabel[] = {0.2, 0.3, 0.5, 0.1, 0.6, 0.3};*/
-    float_t b[] = {4064859.f, 4064859.f,4064859.5};
-    float_t blabel[] = {0.2, 0.3, 0.5};
+    float_t b[] = {3442415.750, 257349.219, 3287622.5, 0.5f, 805999.875, 3328236.750, 242296.984, 2133911.750, 1361594.0, 994116.125};
+    float_t blabel[] = {0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
     //blabel[1.f,1.f]
-    float_t out[2] ={0} ;
-    softMax_cross_entropy_with_logits(blabel, b, 1, 3, out);
-    printf("2X3   %0.6f\t%0.6f  reduce_mean:%0.6f\n", out[0], out[1], reduce_mean(out, 2));
+    float_t out[2] = {0} ;
+    MinMax(b,1,10);
+    for(int i=0;i<10;i++){
+        printf("%4.8f\t",b[i]);
+    }
+    softMax_cross_entropy_with_logits(blabel, b, 1, 10, out);
+    printf("2X3   %0.6f\t%0.6f  reduce_mean:%0.6f\n", out[0], out[1], reduce_mean(out, 1));
 
 
     /*float_t pb[] = {3.0, 1.0, 0.2, 5.0, 7.12, 10.0};*/
-    /*softMax(pb, 6);*/
-    /*printf("softMax:\n");*/
-    /*for(int i = 0; i < 6; i++) {*/
-        /*printf("%5.6f\n", pb[i]);*/
-    /*}*/
-    /*printf("\n");*/
+    float_t pb[] = {3442415.750, 257349.219, 3287622.5, 0.5f, 805999.875, 3328236.750, 242296.984, 2133911.750, 1361594.0, 994116.125};
+    MinMax(pb,1,10);
+    softMax(pb, 10);
+    printf("softMax:\n");
+    for(int i = 0; i < 10; i++) {
+        printf("%5.6f\n", pb[i]);
+    }
+    printf("\n");
 
     return ;
 }
@@ -155,6 +161,7 @@ void loadall()
 #define  FILTER_CORE_BATCH  8
 #define  MAX_POOL_STRIDE  2
 #define  BIAS  0.1f
+#define  CLASS_LOOP 10
 
 void initNet()
 {
@@ -172,10 +179,10 @@ void initNet()
     P[2].ppool_layer = create_poollayer("pool", 5, 5);
     P[3].pconv_layer = create_convlayer("conv2", 3, 3, FILTER_CORE_BATCH, BIAS, 0.8);
     P[4].ppool_layer = create_poollayer("pool2", 2, 2);
-    P[5].pfc_layer = create_fully_connected_layer("fully connection 1/2", 64, 0.5f);
+    P[5].pfc_layer = create_fully_connected_layer("fully connection 1/2", 64, 1, 0.5f);
     P[6].pdrop_layer = create_dropout_layer("dropout layer 2", 1, 1, 64);
-    P[7].pfc_layer = create_fully_connected_layer("fully connection 2/2", 64, 0.5f);
-    P[8].poutput_layer = create_output_layer("output layer", 10);
+    P[7].pfc_layer = create_fully_connected_layer("fully connection 2/2", 64, CLASS_LOOP, 0.5f);
+    P[8].poutput_layer = create_output_layer("output layer", CLASS_LOOP);
 
 
     load_inputlayer(P[0].pinput_layer, pint_img, pint_label[0]);
@@ -266,9 +273,9 @@ void initNet()
     output_epoch(P[7].pfc_layer, P[8].poutput_layer, P[0].pinput_layer->label);
 
     for(uint32_t loop = 0; loop < 10; loop++) {
-        printf("input:%4.3f\toutput:%4.3f\t    feture:%d\n", P[8].poutput_layer->input[loop],
-               P[8].poutput_layer->output[loop], P[0].pinput_layer->label );
+        printf("input:%4.3f\n", P[8].poutput_layer->input[loop]);
     }
+    printf("output:%8.3f\t feture:%d\n",P[8].poutput_layer->output,P[0].pinput_layer->label);
 
     destory_layer(&P[8]);
     destory_layer(&P[7]);

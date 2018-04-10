@@ -195,7 +195,7 @@ void initNet()
 
     const uint32_t imgsize = 28 * 28;
 
-    for(uint32_t  batch = 0; batch < 1; batch++) {
+    for(uint32_t  batch = 0; batch < 60000; batch++) {
         load_inputlayer(P[0].pinput_layer, pint_img + batch * imgsize, pint_label[batch]);
         conv2d_withlayer(P[0].pinput_layer->pdata, 28, 28, 1, P[1].pconv_layer);
         /*printf("conv1 rows:%4d\tconv cols:%4d\tconv batch:%4d\n",*/
@@ -283,9 +283,9 @@ void initNet()
 
         output_epoch(P[7].pfc_layer, P[8].poutput_layer, P[0].pinput_layer->label);
 
-        for(uint32_t loop = 0; loop < 10; loop++) {
-            printf("input:%4.3f\n", P[8].poutput_layer->input[loop]);
-        }
+        /*for(uint32_t loop = 0; loop < 10; loop++) {*/
+            /*printf("input:%4.3f\n", P[8].poutput_layer->input[loop]);*/
+        /*}*/
         printf("output:%8.3f\t feture:%d\n", P[8].poutput_layer->output, P[0].pinput_layer->label);
     }
 

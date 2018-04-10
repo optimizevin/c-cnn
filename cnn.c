@@ -324,7 +324,7 @@ inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_
     assert(pfc_layer != NULL);
     assert(pout_layer != NULL);
 
-    static float labelarray[10] = {0};
+    float_t labelarray[10] = {0};
     labelarray[label ] = 1.f;
 
     for(uint32_t loop = 0; loop < pfc_layer->epoch; loop++) {

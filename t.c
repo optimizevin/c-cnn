@@ -106,23 +106,32 @@ void  test_softmax()
     float_t blabel[] = {0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
     //blabel[1.f,1.f]
     float_t out[2] = {0} ;
-    MinMax(b,1,10);
-    for(int i=0;i<10;i++){
-        printf("%4.8f\t",b[i]);
+    float sum = 0.f;
+    /*MinMax(b, 1, 10);*/
+    for(int i = 0; i < 10; i++) {
+        printf("minmax:%4.8f\n", b[i]);
     }
+    /*smf(b,blabel,10);*/
     softMax_cross_entropy_with_logits(blabel, b, 1, 10, out);
     printf("2X3   %0.6f\t%0.6f  reduce_mean:%0.6f\n", out[0], out[1], reduce_mean(out, 1));
 
 
-    /*float_t pb[] = {3.0, 1.0, 0.2, 5.0, 7.12, 10.0};*/
-    float_t pb[] = {3442415.750, 257349.219, 3287622.5, 0.5f, 805999.875, 3328236.750, 242296.984, 2133911.750, 1361594.0, 994116.125};
-    MinMax(pb,1,10);
-    softMax(pb, 10);
-    printf("softMax:\n");
-    for(int i = 0; i < 10; i++) {
-        printf("%5.6f\n", pb[i]);
-    }
-    printf("\n");
+    /*[>float_t pb[] = {3.0, 1.0, 0.2, 5.0, 7.12, 10.0};<]*/
+    /*[>float_t pb[] = {3442415.750, 257349.219, 3287622.5, 0.5f, 805999.875, 3328236.750, 242296.984, 2133911.750, 1361594.0, 994116.125};<]*/
+    /*float_t pb[] = {1.f,2.f,3.f};*/
+    /*for(int i = 0; i < sizeof(pb)/sizeof(pb[0]); i++) {*/
+        /*printf("pb:%4.8f\n", pb[i]);*/
+    /*}*/
+    /*[>MinMax(pb,1,sizeof(pb)/sizeof(pb[0]));<]*/
+    /*softMax_cross(pb, 1,sizeof(pb)/sizeof(pb[0]));*/
+    /*printf("softMaxloss:\n");*/
+    /*float sum = 0.f;*/
+    /*for(int i = 0; i < sizeof(pb)/sizeof(pb[0]); i++) {*/
+        /*printf("%5.6f\n", pb[i]);*/
+        /*sum +=pb[i];*/
+    /*}*/
+    /*printf("sum:%8.3f",sum);*/
+    /*printf("\n");*/
 
     return ;
 }
@@ -184,98 +193,101 @@ void initNet()
     P[7].pfc_layer = create_fully_connected_layer("fully connection 2/2", 64, CLASS_LOOP, 0.5f);
     P[8].poutput_layer = create_output_layer("output layer", CLASS_LOOP);
 
+    const uint32_t imgsize = 28 * 28;
 
-    load_inputlayer(P[0].pinput_layer, pint_img, pint_label[0]);
-    conv2d_withlayer(P[0].pinput_layer->pdata, 28, 28, 1, P[1].pconv_layer);
-    /*printf("conv1 rows:%4d\tconv cols:%4d\tconv batch:%4d\n",*/
-    /*P[1].pconv_layer->out_rows,*/
-    /*P[1].pconv_layer->out_cols,*/
-    /*P[1].pconv_layer->out_batch);*/
-
-
-    pool_withlayer(P[1].pconv_layer->conv_out,
-                   P[1].pconv_layer->out_rows,
-                   P[1].pconv_layer->out_cols,
-                   P[1].pconv_layer->out_batch,
-                   P[2].ppool_layer, MAX_POOL_STRIDE );
-
-    /*printf("pool1 rows:%4d\tpool cols:%4d\tpool batch:%4d\n",*/
-    /*P[2].ppool_layer->out_rows,*/
-    /*P[2].ppool_layer->out_cols,*/
-    /*P[2].ppool_layer->out_batch);*/
-
-    /*logpr(P[2].ppool_layer->poolout,*/
-    /*P[2].ppool_layer->out_rows,*/
-    /*P[2].ppool_layer->out_cols, 31);*/
-
-    conv2d_withlayer(P[2].ppool_layer->pool_out, P[2].ppool_layer->out_rows,
-                     P[2].ppool_layer->out_cols, P[2].ppool_layer->out_batch, P[3].pconv_layer);
-    /*printf("conv2 rows:%4d\tconv cols:%4d\tconv batch:%4d\n",*/
-    /*P[3].pconv_layer->out_rows,*/
-    /*P[3].pconv_layer->out_cols,*/
-    /*P[3].pconv_layer->out_batch);*/
-    /*logpr(P[3].pconvlayer->pout,*/
-    /*P[3].pconvlayer->out_rows,*/
-    /*P[3].pconvlayer->out_cols, 6);*/
-
-    pool_withlayer(P[3].pconv_layer->conv_out,
-                   P[3].pconv_layer->out_rows,
-                   P[3].pconv_layer->out_cols,
-                   P[3].pconv_layer->out_batch,
-                   P[4].ppool_layer, MAX_POOL_STRIDE );
+    for(uint32_t  batch = 0; batch < 1; batch++) {
+        load_inputlayer(P[0].pinput_layer, pint_img + batch * imgsize, pint_label[batch]);
+        conv2d_withlayer(P[0].pinput_layer->pdata, 28, 28, 1, P[1].pconv_layer);
+        /*printf("conv1 rows:%4d\tconv cols:%4d\tconv batch:%4d\n",*/
+        /*P[1].pconv_layer->out_rows,*/
+        /*P[1].pconv_layer->out_cols,*/
+        /*P[1].pconv_layer->out_batch);*/
 
 
-    /*printf("pool2 rows:%4d\tpool cols:%4d\tpool batch:%4d\n",*/
-    /*P[4].ppool_layer->out_rows,*/
-    /*P[4].ppool_layer->out_cols,*/
-    /*P[4].ppool_layer->out_batch);*/
+        pool_withlayer(P[1].pconv_layer->conv_out,
+                       P[1].pconv_layer->out_rows,
+                       P[1].pconv_layer->out_cols,
+                       P[1].pconv_layer->out_batch,
+                       P[2].ppool_layer, MAX_POOL_STRIDE );
 
-    /*logpr(P[4].ppool_layer->pool_out,*/
-    /*P[4].ppool_layer->out_rows,*/
-    /*P[4].ppool_layer->out_cols, 0);*/
+        /*printf("pool1 rows:%4d\tpool cols:%4d\tpool batch:%4d\n",*/
+        /*P[2].ppool_layer->out_rows,*/
+        /*P[2].ppool_layer->out_cols,*/
+        /*P[2].ppool_layer->out_batch);*/
+
+        /*logpr(P[2].ppool_layer->poolout,*/
+        /*P[2].ppool_layer->out_rows,*/
+        /*P[2].ppool_layer->out_cols, 31);*/
+
+        conv2d_withlayer(P[2].ppool_layer->pool_out, P[2].ppool_layer->out_rows,
+                         P[2].ppool_layer->out_cols, P[2].ppool_layer->out_batch, P[3].pconv_layer);
+        /*printf("conv2 rows:%4d\tconv cols:%4d\tconv batch:%4d\n",*/
+        /*P[3].pconv_layer->out_rows,*/
+        /*P[3].pconv_layer->out_cols,*/
+        /*P[3].pconv_layer->out_batch);*/
+        /*logpr(P[3].pconvlayer->pout,*/
+        /*P[3].pconvlayer->out_rows,*/
+        /*P[3].pconvlayer->out_cols, 6);*/
+
+        pool_withlayer(P[3].pconv_layer->conv_out,
+                       P[3].pconv_layer->out_rows,
+                       P[3].pconv_layer->out_cols,
+                       P[3].pconv_layer->out_batch,
+                       P[4].ppool_layer, MAX_POOL_STRIDE );
 
 
-    fully_connected_fclayer( P[4].ppool_layer->pool_out,
-                             P[4].ppool_layer->out_rows,
-                             P[4].ppool_layer->out_cols,
-                             P[4].ppool_layer->out_batch,
-                             P[5].pfc_layer);
+        /*printf("pool2 rows:%4d\tpool cols:%4d\tpool batch:%4d\n",*/
+        /*P[4].ppool_layer->out_rows,*/
+        /*P[4].ppool_layer->out_cols,*/
+        /*P[4].ppool_layer->out_batch);*/
 
-    /*printf("%s neunum:%4d\n", P[5].pfc_layer->base.layerName,*/
-    /*P[5].pfc_layer->neunum);*/
-    /*logpr(P[5].pfc_layer->neu,*/
-    /*1, P[5].pfc_layer->neunum, 0);*/
+        /*logpr(P[4].ppool_layer->pool_out,*/
+        /*P[4].ppool_layer->out_rows,*/
+        /*P[4].ppool_layer->out_cols, 0);*/
 
-    dropout_layer( P[5].pfc_layer->neu,
-                   1, 1,
-                   P[5].pfc_layer->neunum,
-                   P[6].pdrop_layer);
-    /*printf("\ndropout rows:%4d  dropout cols:%4d\tdroplayer batch:%4d\n",*/
-    /*P[6].pdrop_layer->out_rows,*/
-    /*P[6].pdrop_layer->out_cols,*/
-    /*P[6].pdrop_layer->drop_batch);*/
 
-    /*logpr(P[6].pdrop_layer->drop_out,*/
-    /*1,*/
-    /*64, 0);*/
+        fully_connected_fclayer( P[4].ppool_layer->pool_out,
+                                 P[4].ppool_layer->out_rows,
+                                 P[4].ppool_layer->out_cols,
+                                 P[4].ppool_layer->out_batch,
+                                 P[5].pfc_layer);
 
-    fully_connected_fclayer( P[6].pdrop_layer->drop_out,
-                             1, 1, 64,
-                             P[7].pfc_layer);
+        /*printf("%s neunum:%4d\n", P[5].pfc_layer->base.layerName,*/
+        /*P[5].pfc_layer->neunum);*/
+        /*logpr(P[5].pfc_layer->neu,*/
+        /*1, P[5].pfc_layer->neunum, 0);*/
 
-    /*printf("\n%s neunum:%4d\n", P[7].pfc_layer->base.layerName,*/
-    /*P[7].pfc_layer->neunum);*/
-    /*logpr(P[7].pfc_layer->neu,*/
-    /*1, P[7].pfc_layer->neunum, 0);*/
+        dropout_layer( P[5].pfc_layer->neu,
+                       1, 1,
+                       P[5].pfc_layer->neunum,
+                       P[6].pdrop_layer);
+        /*printf("dropout rows:%4d  dropout cols:%4d\tdroplayer batch:%4d\n",*/
+        /*P[6].pdrop_layer->out_rows,*/
+        /*P[6].pdrop_layer->out_cols,*/
+        /*P[6].pdrop_layer->drop_batch);*/
 
-    /*P[8].poutput_layer->output[loop] = P[7].pfc_layer->neu[0];*/
+        /*logpr(P[6].pdrop_layer->drop_out,*/
+        /*1,*/
+        /*64, 0);*/
 
-    output_epoch(P[7].pfc_layer, P[8].poutput_layer, P[0].pinput_layer->label);
+        fully_connected_fclayer( P[6].pdrop_layer->drop_out,
+                                 1, 1, 64,
+                                 P[7].pfc_layer);
 
-    for(uint32_t loop = 0; loop < 10; loop++) {
-        printf("input:%4.3f\n", P[8].poutput_layer->input[loop]);
+        /*printf("%s neunum:%4d\n", P[7].pfc_layer->base.layerName,*/
+        /*P[7].pfc_layer->neunum);*/
+        /*logpr(P[7].pfc_layer->neu,*/
+        /*1, P[7].pfc_layer->neunum, 0);*/
+
+        /*P[8].poutput_layer->output[loop] = P[7].pfc_layer->neu[0];*/
+
+        output_epoch(P[7].pfc_layer, P[8].poutput_layer, P[0].pinput_layer->label);
+
+        for(uint32_t loop = 0; loop < 10; loop++) {
+            printf("input:%4.3f\n", P[8].poutput_layer->input[loop]);
+        }
+        printf("output:%8.3f\t feture:%d\n", P[8].poutput_layer->output, P[0].pinput_layer->label);
     }
-    printf("output:%8.3f\t feture:%d\n",P[8].poutput_layer->output,P[0].pinput_layer->label);
 
     destory_layer(&P[8]);
     destory_layer(&P[7]);

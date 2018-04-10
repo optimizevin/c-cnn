@@ -291,23 +291,6 @@ inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_
     }
 }
 
-inline  void forward_proc(uint32_t label, struct output_layer * pout)
-{
-
-    /*softMax_cross_entropy_with_logits(blabel, b, 2, 3, out);*/
-    /*softmax_cross_entropy_with_logits(labelarray,pout->output);*/
-    /*y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2*/
-
-    /*cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv))*/
-    /*train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)*/
-
-
-    /*cross_entropy = reduece_mean(softmax_cross_entropy_with_logits(label,fc->out);*/
-    /*float_t out[2] ;*/
-    /*softMax_cross_entropy_with_logits(blabel, b, 2, 3, out);*/
-    /*reduece_mean(pfc_layer->out);*/
-}
-
 struct dropout_layer* create_dropout_layer(const char*pstr, uint32_t rows, uint32_t cols, uint32_t batch)
 {
     struct  dropout_layer * ret = (struct dropout_layer*)calloc(sizeof(struct dropout_layer), 1);
@@ -342,7 +325,7 @@ inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_
     assert(pout_layer != NULL);
 
     static float labelarray[10] = {0};
-    labelarray[label - 1] = 1.f;
+    labelarray[label ] = 1.f;
 
     for(uint32_t loop = 0; loop < pfc_layer->epoch; loop++) {
         pout_layer->input[loop] = 0.f;
@@ -353,12 +336,10 @@ inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_
         }
         pout_layer->input[loop] = Relu_def(tmp + pfc_layer->bias);
     }
+    MinMax(pout_layer->input,1,pfc_layer->epoch);
+    softMax_cross_entropy_with_logits(labelarray,
+                                      pout_layer->input, 1, pfc_layer->epoch, &pout_layer->output);
 
-    MinMax(pout_layer->input, 1, 10);
-    for(uint32_t loop = 0; loop < pfc_layer->epoch; loop++) {
-        softMax_cross_entropy_with_logits(labelarray,
-                                          pout_layer->input, 1, 10, &pout_layer->output);
-    }
 }
 
 

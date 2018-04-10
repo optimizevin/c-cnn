@@ -89,11 +89,12 @@ inline void subsampling_fun(float_t *src, uint32_t rows, uint32_t cols, uint32_t
 inline float_t Relu(const float_t *pf, uint32_t len);
 inline void dropout(const float_t *src, const uint32_t len, float_t keep_prob, float_t *out);
 inline float_t reduce_mean(const float_t *src, const uint32_t len);
+inline void softMax_cross(float_t *src, uint32_t rows, uint32_t cols);
 inline void softMax(float_t *src, uint32_t size);
 inline void softMax_cross_entropy_with_logits(const float_t *labels, const float_t *logits, 
         uint32_t rows, uint32_t cols,float_t *pOut);
 
-inline void foreach_log(float_t *src, const uint32_t len);
+inline void foreach_log(float_t *src, const uint32_t len,const float_t bias);
 inline void SGD_Momentum(const float_t *W,const uint32_t len,const float_t lr, const float_t momentum,
                          const float_t decay, const int nesterov);
 inline  void AdamOptimizer(const float_t lr,const float_t beta_1,const float_t beta_2,

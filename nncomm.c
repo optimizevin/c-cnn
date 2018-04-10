@@ -270,10 +270,10 @@ inline float_t reduce_mean(const float_t *src, const uint32_t len)
 }
 
 
-inline void foreach_log(float_t *src, const uint32_t len)
+inline void foreach_log(float_t *src, const uint32_t len, const float_t bias)
 {
     for(uint32_t i = 0 ; i < len; i++) {
-        src[i] = log(src[i]);
+        src[i] = log(src[i] + bias);
     }
 }
 
@@ -293,21 +293,10 @@ inline void softMax(float_t *src, uint32_t size)
     }
 }
 
-static inline void softMax_cross(float_t *src, uint32_t rows, uint32_t cols)
+inline void softMax_cross(float_t *src, uint32_t rows, uint32_t cols)
 {
     for (uint32_t i = 0; i < rows; ++i) {
-        float_t fmax = FLT_MIN;
-        float_t sum = 0.f;
-        for (uint32_t j = 0; j < cols; j++) {
-            fmax = fmax < src[j + i * cols] ? src[j + i * cols] : fmax;
-        }
-        for (uint32_t j = 0; j < cols; j++) {
-            src[j + i * cols] = exp(src[j + i * cols] - fmax);
-            sum += src[j + i * cols];
-        }
-        for (uint32_t j = 0; j < cols; j++) {
-            src[j + i * cols] /= sum;
-        }
+        softMax(&src[i * cols], cols);
     }
 }
 
@@ -321,25 +310,24 @@ inline void softMax_cross_entropy_with_logits(const float_t *labels, const float
     memcpy(tmp, logits, rows * cols * sizeof(float_t));
     softMax_cross(tmp, rows, cols);
     const  uint32_t bsize = sizeof(tmp) / sizeof(tmp[0]);
-    foreach_log(tmp, bsize);
+
+    foreach_log(tmp, bsize, 1E-10);
 
     float_t bout[bsize];
     for(uint32_t i = 0; i < bsize; i++) {
         bout[i] = tmp[i] * labels[i];
     }
 
-    float_t(*pBout)[cols] = (float_t(*)[cols])bout;
+    float_t(*pBout)[rows][cols] = (float_t(*)[rows][cols])bout;
     for(uint32_t i = 0; i < rows; i++) {
         float_t  t = 0.f;
         for(uint32_t j = 0; j < cols; j++) {
-            t += pBout[i][j];
+            t += (*pBout)[i][j];
         }
         pOut[i] = -t;
     }
 
 }
-
-
 
 
 /************************************************
@@ -355,8 +343,6 @@ inline void SGD_Momentum(const float_t *W, const uint32_t len, const float_t lr,
     for(uint32_t i = 0; i < len; i++) {
     }
 }
-
-
 
 
 /************************************************

@@ -339,7 +339,7 @@ inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_
     MinMax(pout_layer->input,1,pfc_layer->epoch);
     softMax_cross_entropy_with_logits(labelarray,
                                       pout_layer->input, 1, pfc_layer->epoch, &pout_layer->output);
-
+    //SGD moment
 }
 
 

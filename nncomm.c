@@ -324,7 +324,7 @@ inline void softMax_cross_entropy_with_logits(const float_t *labels, const float
         for(uint32_t j = 0; j < cols; j++) {
             t += (*pBout)[i][j];
         }
-        pOut[i] = -t;
+        pOut[i] = (-t)/(rows*cols);
     }
 
 }

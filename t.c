@@ -106,7 +106,6 @@ void  test_softmax()
     float_t blabel[] = {0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
     //blabel[1.f,1.f]
     float_t out[2] = {0} ;
-    float sum = 0.f;
     /*MinMax(b, 1, 10);*/
     for(int i = 0; i < 10; i++) {
         printf("minmax:%4.8f\n", b[i]);
@@ -195,7 +194,7 @@ void initNet()
 
     const uint32_t imgsize = 28 * 28;
 
-    for(uint32_t  batch = 0; batch < 60000; batch++) {
+    for(uint32_t  batch = 0; batch < 1; batch++) {
         load_inputlayer(P[0].pinput_layer, pint_img + batch * imgsize, pint_label[batch]);
         conv2d_withlayer(P[0].pinput_layer->pdata, 28, 28, 1, P[1].pconv_layer);
         /*printf("conv1 rows:%4d\tconv cols:%4d\tconv batch:%4d\n",*/
@@ -236,10 +235,10 @@ void initNet()
                        P[4].ppool_layer, MAX_POOL_STRIDE );
 
 
-        /*printf("pool2 rows:%4d\tpool cols:%4d\tpool batch:%4d\n",*/
-        /*P[4].ppool_layer->out_rows,*/
-        /*P[4].ppool_layer->out_cols,*/
-        /*P[4].ppool_layer->out_batch);*/
+        printf("pool2 rows:%4d\tpool cols:%4d\tpool batch:%4d\n",
+        P[4].ppool_layer->out_rows,
+        P[4].ppool_layer->out_cols,
+        P[4].ppool_layer->out_batch);
 
         /*logpr(P[4].ppool_layer->pool_out,*/
         /*P[4].ppool_layer->out_rows,*/
@@ -252,10 +251,8 @@ void initNet()
                                  P[4].ppool_layer->out_batch,
                                  P[5].pfc_layer);
 
-        /*printf("%s neunum:%4d\n", P[5].pfc_layer->base.layerName,*/
-        /*P[5].pfc_layer->neunum);*/
-        /*logpr(P[5].pfc_layer->neu,*/
-        /*1, P[5].pfc_layer->neunum, 0);*/
+        /*printf("%s neunum:%4d\n", P[5].pfc_layer->base.layerName, P[5].pfc_layer->neunum);*/
+        /*logpr(P[5].pfc_layer->neu, 1, P[5].pfc_layer->neunum, 0);*/
 
         dropout_layer( P[5].pfc_layer->neu,
                        1, 1,

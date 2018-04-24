@@ -157,7 +157,7 @@ inline void load_inputlayer(struct input_layer *pinput, const float_t *pdata, co
 
 struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, uint32_t epoch, float_t bias);
 inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
-                                  float_t *pweight, float_t bias, float_t *pout);
+                                  float_t *pweight, float_t bias, float_t pout);
 inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_t data_cols,
                                      uint32_t data_batch, struct fc_layer *pfc_layer);
 

@@ -61,6 +61,7 @@
 #define Relu_def(x) x>0?x:0
 
 inline float_t sigmoid(const float_t x);
+inline float_t dsigmoid(float_t y);
 
 
 typedef  void(*pFun_Pooll)(float_t *, uint32_t , uint32_t , uint32_t , float_t*);
@@ -68,6 +69,7 @@ typedef  void(*pFun_Pooll)(float_t *, uint32_t , uint32_t , uint32_t , float_t*)
 inline void padding(float_t* p,uint32_t rows,uint32_t cols,uint32_t step,float_t *pout);
  //Min-Max normalization 
 inline void MinMax(float_t *pdata,uint32_t rows,uint32_t cols);
+inline void MinMax_log(float_t *pdata, uint32_t rows, uint32_t cols);
 
 inline  void bias( float_t *pfloat, const  uint32_t nsize, const float_t stddev);
 inline  float_t  generateGaussianNoise(const float_t mean, const float_t stdDev);
@@ -95,10 +97,6 @@ inline void softMax_cross_entropy_with_logits(const float_t *labels, const float
         uint32_t rows, uint32_t cols,float_t *pOut);
 
 inline void foreach_log(float_t *src, const uint32_t len,const float_t bias);
-inline void SGD_Momentum(const float_t *W,const uint32_t len,const float_t lr, const float_t momentum,
-                         const float_t decay, const int nesterov);
-inline  void AdamOptimizer(const float_t lr,const float_t beta_1,const float_t beta_2,
-        const float_t epsilon,const float_t decay);
 
 // adamoptimizer
 // tf.equal  相等

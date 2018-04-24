@@ -1,44 +1,44 @@
 /*
-*   Copyright (C), 2017-1, Tech. Co., Ltd.
-*   File name   : cnn.c
-*   Author      : vincent
-*   Version     : 0.9
-*   Date        : 2017.6
-*   Description : cnn
-*/
+ *   Copyright (C), 2017-1, Tech. Co., Ltd.
+ *   File name   : cnn.c
+ *   Author      : vincent
+ *   Version     : 0.9
+ *   Date        : 2017.6
+ *   Description : cnn
+ */
 
 /***************************************************************************
 
-   Vincent ,
-   GitHub      : https://github.com/optimizevin
+  Vincent ,
+GitHub      : https://github.com/optimizevin
 
-   Copyright (c) 2017 - .  All rights reserved.
+Copyright (c) 2017 - .  All rights reserved.
 
-   This code is licensed under the MIT License.  See the FindCUDA.cmake script
-   for the text of the license.
+This code is licensed under the MIT License.  See the FindCUDA.cmake script
+for the text of the license.
 
-  The MIT License
+The MIT License
 
-  License for the specific language governing rights and limitations under
-  Permission is hereby granted, free of charge, to any person obtaining a
-  copy of this software and associated documentation files (the "Software"),
-  to deal in the Software without restriction, including without limitation
-  the rights to use, copy, modify, merge, publish, distribute, sublicense,
-  and/or sell copies of the Software, and to permit persons to whom the
-  Software is furnished to do so, subject to the following conditions:
+License for the specific language governing rights and limitations under
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
 
-  The above copyright notice and this permission notice shall be included
-  in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
 
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-  OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-  DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
 
-***************************************************************************/
+ ***************************************************************************/
 #include "cnn.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -242,7 +242,7 @@ struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, 
     strcpy(ret->base.layerName, pstr);
     ret->neunum = neunum;
     if(ret->neu == NULL) {
-        ret->neu = (float_t*)calloc(sizeof(float_t) * neunum * epoch, 1);
+        ret->neu = (float_t*)calloc(sizeof(float_t) * neunum , 1);
     }
     if(ret->weight == NULL) {
         ret->weight = (float_t*)calloc(sizeof(float_t) * neunum * epoch, 1);
@@ -258,7 +258,7 @@ struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, 
 }
 
 inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
-                                  float_t *pweight, float_t bias, float_t *pout)
+                                  float_t *pweight, float_t bias, float_t pout)
 {
     assert(pdata != NULL);
     float_t (*pd)[data_rows][data_cols] =
@@ -272,7 +272,7 @@ inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t d
                 tmp += (*pd)[i][j] * pweight[step];
             }
         }
-        pout[step] = Relu_def(tmp + bias);
+        pout = Relu_def(tmp + bias);
         tmp = 0.f;
         pd++;
         step++;
@@ -285,9 +285,13 @@ inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_
                                      uint32_t data_batch, struct fc_layer *pfc_layer)
 {
     assert(pdata != NULL);
-    for(uint32_t i = 0; i < pfc_layer->epoch; i++) {
-        fully_connected_data(pdata, data_rows, data_cols, data_batch,
-                             pfc_layer->weight + i * data_batch, pfc_layer->bias, pfc_layer->neu + i * data_batch);
+    for(uint32_t j = 0; j < pfc_layer->neunum; j++) {
+        for(uint32_t i = 0; i < pfc_layer->epoch; i++) {
+            /*fully_connected_data(pdata, data_rows, data_cols, data_batch,*/
+            /*pfc_layer->weight + i * data_batch, pfc_layer->bias, pfc_layer->neu + i * data_batch);*/
+            fully_connected_data(pdata, data_rows, data_cols, data_batch,
+            pfc_layer->weight + i * data_batch, pfc_layer->bias, *(pfc_layer->neu + j));
+        }
     }
 }
 
@@ -336,12 +340,11 @@ inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_
         }
         pout_layer->input[loop] = Relu_def(tmp + pfc_layer->bias);
     }
-    MinMax(pout_layer->input,1,pfc_layer->epoch);
+    MinMax_log(pout_layer->input, 1, pfc_layer->epoch);
     softMax_cross_entropy_with_logits(labelarray,
                                       pout_layer->input, 1, pfc_layer->epoch, &pout_layer->output);
     //SGD moment
 }
-
 
 struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t rows)
 {

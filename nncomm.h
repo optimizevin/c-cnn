@@ -61,7 +61,7 @@
 #define Relu_def(x) x>0?x:0
 
 inline float_t sigmoid(const float_t x);
-inline float_t dsigmoid(float_t y);
+inline float_t diff_sigmoid(float_t y);
 
 
 typedef  void(*pFun_Pooll)(float_t *, uint32_t , uint32_t , uint32_t , float_t*);
@@ -93,8 +93,8 @@ inline void dropout(const float_t *src, const uint32_t len, float_t keep_prob, f
 inline float_t reduce_mean(const float_t *src, const uint32_t len);
 inline void softMax_cross(float_t *src, uint32_t rows, uint32_t cols);
 inline void softMax(float_t *src, uint32_t size);
-inline void softMax_cross_entropy_with_logits(const float_t *labels, const float_t *logits, 
-        uint32_t rows, uint32_t cols,float_t *pOut);
+inline float_t softMax_diff(float_t *src, uint32_t pos);
+inline void softMax_cross_entropy_with_logits(const uint32_t labels, float_t *logits, const uint32_t blen, float_t *pOut);
 
 inline void foreach_log(float_t *src, const uint32_t len,const float_t bias);
 

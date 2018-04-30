@@ -264,6 +264,7 @@ inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t d
     float_t (*pd)[data_rows][data_cols] =
         (float_t(*)[data_rows][data_cols])pdata;
 
+
     float_t tmp = 0.f;
     uint32_t step = 0;
     for(uint32_t db = 0; db < data_batch; db++) {
@@ -290,7 +291,7 @@ inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_
             /*fully_connected_data(pdata, data_rows, data_cols, data_batch,*/
             /*pfc_layer->weight + i * data_batch, pfc_layer->bias, pfc_layer->neu + i * data_batch);*/
             fully_connected_data(pdata, data_rows, data_cols, data_batch,
-            pfc_layer->weight + i * data_batch, pfc_layer->bias, *(pfc_layer->neu + j));
+                                 pfc_layer->weight + i * data_batch, pfc_layer->bias, *(pfc_layer->neu + j));
         }
     }
 }
@@ -323,13 +324,17 @@ struct output_layer* create_output_layer(const char*pstr, uint32_t classnum)
     return ret;
 }
 
-inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label)
+inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label, uint32_t len)
 {
     assert(pfc_layer != NULL);
     assert(pout_layer != NULL);
 
     float_t labelarray[10] = {0};
     labelarray[label ] = 1.f;
+    float_t  sumlabel = 0.f;
+    for(uint32_t i = 0; i < 10; i++) {
+        sumlabel += labelarray[label];
+    }
 
     for(uint32_t loop = 0; loop < pfc_layer->epoch; loop++) {
         pout_layer->input[loop] = 0.f;
@@ -340,10 +345,16 @@ inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_
         }
         pout_layer->input[loop] = Relu_def(tmp + pfc_layer->bias);
     }
-    MinMax_log(pout_layer->input, 1, pfc_layer->epoch);
-    softMax_cross_entropy_with_logits(labelarray,
-                                      pout_layer->input, 1, pfc_layer->epoch, &pout_layer->output);
+    /*MinMax_log(pout_layer->input, 1, pfc_layer->epoch);*/
+
+    float_t diff = 0.f;
+    softMax_cross_entropy_with_logits(label, pout_layer->input, pfc_layer->epoch, &diff);
+    printf("diff:%8.4f\n", diff);
+    for(int i=0;i<10;i++){
+        printf("inout:%8.4f\n",pout_layer->input[i]);
+    }
     //SGD moment
+    /*pout_layer->output;*/
 }
 
 struct pool_layer* create_poollayer(const char* pstr, uint32_t cols, uint32_t rows)

@@ -106,7 +106,7 @@ struct fc_layer {
     uint32_t  epoch;
     float_t *neu;
     float_t *weight;
-    float_t   bias;
+    float_t  bias;
 };
 
 struct dropout_layer {
@@ -167,7 +167,7 @@ inline void dropout_layer(float_t *pdata, uint32_t rows, uint32_t cols, uint32_t
 
 
 struct output_layer* create_output_layer(const char*pstr, uint32_t classnum);
-inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label);
+inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label,uint32_t len);
 
 
 inline  void forward_proc(uint32_t lable, struct output_layer * pout);

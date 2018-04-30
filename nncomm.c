@@ -106,9 +106,9 @@ inline float_t sigmoid(float_t x)
     return (1 / (1 + exp(-x)));
 }
 
-inline float_t dsigmoid(float_t y)
+inline float_t diff_sigmoid(float_t y)
 {
-    return y*(1-y);
+    return sigmoid(y) * (1 - sigmoid(y));
 }
 
 inline  float_t* randf(const uint32_t nsize, const float_t stddev)
@@ -138,7 +138,7 @@ inline void MinMax_log(float_t *pdata, uint32_t rows, uint32_t cols)
     }
     for(int32_t i = 0; i < rows; i++) {
         for(int32_t j = 0; j < cols; j++) {
-            (*pd)[i][j] = log10((*pd)[i][j])/log10(mmax);
+            (*pd)[i][j] = log10((*pd)[i][j]) / log10(mmax);
         }
     }
 }
@@ -297,6 +297,10 @@ inline void foreach_log(float_t *src, const uint32_t len, const float_t bias)
     }
 }
 
+inline float_t softMax_diff(float_t *src, uint32_t pos)
+{
+    return -log(src[pos]);
+}
 
 inline void softMax(float_t *src, uint32_t size)
 {
@@ -322,40 +326,44 @@ inline void softMax_cross(float_t *src, uint32_t rows, uint32_t cols)
 
 /************************************************
     Cross-entropy cost function
+    softMax_cross_entropy_with_logits(labelarray,
+                                      pout_layer->input,  pfc_layer->epoch, &pout_layer->output);
 ************************************************/
-inline void softMax_cross_entropy_with_logits(const float_t *labels, const float_t *logits,
-        uint32_t rows, uint32_t cols, float_t *pOut)
+inline void softMax_cross_entropy_with_logits(const uint32_t labels, float_t *logits, const uint32_t blen, float_t *pOut)
 {
-    float_t tmp[rows * cols];
-    memcpy(tmp, logits, rows * cols * sizeof(float_t));
-    softMax_cross(tmp, rows, cols);
-    const  uint32_t bsize = sizeof(tmp) / sizeof(tmp[0]);
-    /*float_t s = 0.f;*/
-    /*for(int i=0;i<10;i++){*/
-        /*printf("sf:%8.3f\n",tmp[i]);*/
-        /*s +=tmp[i];*/
+    softMax_cross(logits, 1, blen);
+    logits[labels] -= 1;
+    *pOut = logits[labels] ;
+    /*for(int i=0;i<blen;i++){*/
+    /*[>printf("logits:%8.4f - label:%8.4f = %8.4f\n",logits[i],labels[i],logits[i]-labels[i]);<]*/
+    /*logits[i] -= labels[i];*/
     /*}*/
-        /*printf("s:%8.3f\n",s);*/
+    /*float_t s = 0.f;*/
+    /*for(int i = 0; i < 10; i++) {*/
+    /*printf("sf:%8.3f\n", logits[i]);*/
+    /*s += logits[i];*/
+    /*}*/
+    /*printf("sum:%8.3f\n", s);*/
 
     //loss
-    foreach_log(tmp, bsize, 1E-10);
+    /*foreach_log(logits, blen, 1E-10);*/
 
-    float_t bout[bsize];
-    for(uint32_t i = 0; i < bsize; i++) {
-        bout[i] = tmp[i] * labels[i];
-    }
+    /*float_t bout[blen];*/
+    /*for(uint32_t i = 0; i < blen; i++) {*/
+    /*bout[i] = logits[i] * labels[i];*/
+    /*}*/
 
-
-    float_t(*pBout)[rows][cols] = (float_t(*)[rows][cols])bout;
-    for(uint32_t i = 0; i < rows; i++) {
-        float_t  t = 0.f;
-        for(uint32_t j = 0; j < cols; j++) {
-            t += (*pBout)[i][j];
-        }
-        pOut[i] = (-t)/(rows*cols);
-    }
-
+    /*float_t  t = 0.f;*/
+    /*for(uint32_t i = 0; i < blen; i++) {*/
+    /*t += bout[i];*/
+    /*}*/
+    /*//loss*/
+    /**pOut = (-t) / blen;*/
 }
+
+/*void  bp(const float_t *plabels, const uint32_t len);*/
+/*{*/
+/*}*/
 
 
 /************************************************

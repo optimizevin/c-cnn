@@ -75,8 +75,9 @@ int test()
     float_t sigf = 1.105905967;
     printf("sigmoid %.8f\n", sigmoid(sigf));
 
-    float_t b[] = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f};
-    float_t f[] = {0.1, 0.f, 0.1, 0.f};
+    /*float_t b[] = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f};*/
+    /*float_t f[] = {0.1, 0.f, 0.1, 0.f};*/
+
 
     /*ave_pool(b, 3, 4, 2, NULL);*/
     /*return 0;*/
@@ -84,7 +85,7 @@ int test()
     float_t*pOut = NULL;
     pOut = (float_t*)calloc(2 * 3, sizeof(float_t));
 
-    conv2d_withonefilter(b, 3, 4, f, 2, 2, 0.5f, pOut);
+    /*conv2d_withonefilter(b, 3, 4, f, 2, 2, 0.5f, pOut);*/
 
     for(int i = 0; i < 2; i++) {
         for(int j = 0; j < 3; j++) {
@@ -103,7 +104,20 @@ void  test_softmax()
     /*float_t b[] = {2.f, 0.5, 1.f, 0.1, 1.f, 3.f};*/
     /*float_t blabel[] = {0.2, 0.3, 0.5, 0.1, 0.6, 0.3};*/
     float_t b[] = {3442415.750, 257349.219, 3287622.5, 0.5f, 805999.875, 3328236.750, 242296.984, 2133911.750, 1361594.0, 994116.125};
-    float_t blabel[] = {0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+
+
+    float_t c[] = {1.f,2.f,3.f};
+    /*float_t bl[] = {0.f, 1.f, 0.f};*/
+    /*softMax(c,3);*/
+    /*for(int i=0;i<3;i++)*/
+        /*printf("c:%8.4f\n",c[i]);*/
+    float_t o = 0.f;
+/*inline void softMax_cross_entropy_with_logits(const float_t *labels, float_t *logits, const uint32_t blen,float_t *pOut)*/
+    softMax_cross_entropy_with_logits(1,c,3,&o);
+    printf("reto:%8.4f\n",o);
+    return;
+
+    /*float_t blabel[] = {0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};*/
     //blabel[1.f,1.f]
     float_t out[2] = {0} ;
     /*MinMax(b, 1, 10);*/
@@ -111,7 +125,7 @@ void  test_softmax()
         printf("minmax:%4.8f\n", b[i]);
     }
     /*smf(b,blabel,10);*/
-    softMax_cross_entropy_with_logits(blabel, b, 1, 10, out);
+    softMax_cross_entropy_with_logits(1, b, 10,out);
     printf("2X3   %0.6f\t%0.6f  reduce_mean:%0.6f\n", out[0], out[1], reduce_mean(out, 1));
 
 
@@ -268,7 +282,7 @@ void initNet()
         /*64, 0);*/
 
         fully_connected_fclayer( P[6].pdrop_layer->drop_out,
-                                 1, 1, 64,
+                                 1, 1, P[5].pfc_layer->neunum,
                                  P[7].pfc_layer);
 
         /*printf("%s neunum:%4d\n", P[7].pfc_layer->base.layerName,*/
@@ -278,7 +292,7 @@ void initNet()
 
         /*P[8].poutput_layer->output[loop] = P[7].pfc_layer->neu[0];*/
 
-        output_epoch(P[7].pfc_layer, P[8].poutput_layer, P[0].pinput_layer->label);
+        output_epoch(P[7].pfc_layer, P[8].poutput_layer, P[0].pinput_layer->label,10);
 
         /*for(uint32_t loop = 0; loop < 10; loop++) {*/
             /*printf("input:%4.3f\n", P[8].poutput_layer->input[loop]);*/
@@ -302,7 +316,7 @@ int main(int argc, char **argv)
 {
     srand((unsigned)time(NULL));
     printf("test\n");
-    /*test();*/
+    /*[>[>test();<]<]*/
     /*test_softmax();*/
     /*return 0;*/
 

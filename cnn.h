@@ -103,10 +103,10 @@ struct pool_layer {
 struct fc_layer {
     struct base_layer base;
     uint32_t  neunum;
-    uint32_t  epoch;
+    uint32_t  weightsize_ofoneneu;
     float_t *neu;
     float_t *weight;
-    float_t  bias;
+    float_t *bias;
 };
 
 struct dropout_layer {
@@ -135,7 +135,7 @@ union store_layer {
     struct pool_layer       *ppool_layer;
 };
 
-void logpr(float_t* fd, int32_t rows, int32_t cols, int32_t dept);
+void logpr(float_t* fd, int32_t rows, int32_t cols, int32_t epoch);
 
 struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t rows, uint32_t batch,
                                     float_t bias, float_t stddev);
@@ -155,9 +155,9 @@ inline void load_inputlayer(struct input_layer *pinput, const float_t *pdata, co
 
 
 
-struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, uint32_t epoch, float_t bias);
-inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
-                                  float_t *pweight, float_t bias, float_t pout);
+struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, uint32_t weightsize_ofoneneu, float_t bias);
+inline  void fully_connected_update(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
+                                  float_t *pweight, float_t bias, float_t *pout);
 inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_t data_cols,
                                      uint32_t data_batch, struct fc_layer *pfc_layer);
 
@@ -167,7 +167,8 @@ inline void dropout_layer(float_t *pdata, uint32_t rows, uint32_t cols, uint32_t
 
 
 struct output_layer* create_output_layer(const char*pstr, uint32_t classnum);
-inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label,uint32_t len);
+inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label,uint32_t len,
+    float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch);
 
 
 inline  void forward_proc(uint32_t lable, struct output_layer * pout);

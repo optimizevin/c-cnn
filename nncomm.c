@@ -331,39 +331,21 @@ inline void softMax_cross(float_t *src, uint32_t rows, uint32_t cols)
 ************************************************/
 inline void softMax_cross_entropy_with_logits(const uint32_t labels, float_t *logits, const uint32_t blen, float_t *pOut)
 {
+
     softMax_cross(logits, 1, blen);
-    logits[labels] -= 1;
-    *pOut = logits[labels] ;
-    /*for(int i=0;i<blen;i++){*/
-    /*[>printf("logits:%8.4f - label:%8.4f = %8.4f\n",logits[i],labels[i],logits[i]-labels[i]);<]*/
-    /*logits[i] -= labels[i];*/
+    // mulitple class
+    /*float_t ulab[3] = {0};*/
+    /*ulab[labels] = 1.f;*/
+    /*float_t tmp = 0.f;*/
+    /*for(int i = 0; i < 3; i++) {*/
+    /*tmp += ulab[i]*log(logits[i]);*/
     /*}*/
-    /*float_t s = 0.f;*/
-    /*for(int i = 0; i < 10; i++) {*/
-    /*printf("sf:%8.3f\n", logits[i]);*/
-    /*s += logits[i];*/
-    /*}*/
-    /*printf("sum:%8.3f\n", s);*/
+    /**pOut = -tmp;*/
+    /*printf("tmp:%8.8f\n",-tmp);*/
 
-    //loss
-    /*foreach_log(logits, blen, 1E-10);*/
-
-    /*float_t bout[blen];*/
-    /*for(uint32_t i = 0; i < blen; i++) {*/
-    /*bout[i] = logits[i] * labels[i];*/
-    /*}*/
-
-    /*float_t  t = 0.f;*/
-    /*for(uint32_t i = 0; i < blen; i++) {*/
-    /*t += bout[i];*/
-    /*}*/
-    /*//loss*/
-    /**pOut = (-t) / blen;*/
+    //single class
+    *pOut = -log(logits[labels]);
 }
-
-/*void  bp(const float_t *plabels, const uint32_t len);*/
-/*{*/
-/*}*/
 
 
 /************************************************

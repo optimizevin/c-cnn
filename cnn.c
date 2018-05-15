@@ -47,9 +47,9 @@ DEALINGS IN THE SOFTWARE.
 #include <float.h>
 
 
-void logpr(float_t* fd, int32_t rows, int32_t cols, int32_t dept)
+void logpr(float_t* fd, int32_t rows, int32_t cols, int32_t epoch)
 {
-    float_t *pdata = fd + (rows * cols * dept);
+    float_t *pdata = fd + (rows * cols * epoch);
     float_t(*p)[][cols] = (float_t(*)[][cols])pdata;
     for(int i = 0; i < rows; i++) {
         for(int j = 0; j < cols; j++) {
@@ -99,6 +99,7 @@ inline  void conv2d_withonefilter(const float_t *pData, uint32_t data_rows, uint
                     tmp += (*pImg)[ida + fda][jda + fdj] * (*pfilter)[fda][fdj];
                 }
             }
+            /*tmp = tan(tmp);*/
             tmp = Relu_def(tmp);
             tmp += bias;
             (*(float_t(*)[][nbox_cols])pOut)[ida][jda] = tmp;
@@ -235,35 +236,38 @@ struct conv_layer* create_convlayer(const char* pstr, uint32_t cols, uint32_t ro
 }
 
 
-struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, uint32_t epoch, float_t bias)
+struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, uint32_t weightsize_ofoneneu, float_t bias)
 {
     struct  fc_layer * ret = (struct fc_layer*)calloc(sizeof(struct fc_layer), 1);
     ret->base.laytype = LAY_FULLYCONNECT;
     strcpy(ret->base.layerName, pstr);
     ret->neunum = neunum;
+    ret->weightsize_ofoneneu = weightsize_ofoneneu;
     if(ret->neu == NULL) {
         ret->neu = (float_t*)calloc(sizeof(float_t) * neunum , 1);
     }
+    const uint32_t wsize = neunum * weightsize_ofoneneu;
     if(ret->weight == NULL) {
-        ret->weight = (float_t*)calloc(sizeof(float_t) * neunum * epoch, 1);
+        ret->weight = (float_t*)calloc(sizeof(float_t) * wsize , 1);
     }
 
-    uint32_t fullsize = neunum * epoch;
-    for(uint32_t  i = 0; i < fullsize; i++) {
+    for(uint32_t  i = 0; i < wsize; i++) {
         ret->weight[i] =  generateGaussianNoise(0.5f, 0.8f);
     }
-    ret->bias = bias;
-    ret->epoch = epoch;
+    ret->bias = (float_t*)calloc(sizeof(float_t), neunum);
+    for(uint32_t  i = 0; i < neunum; i++) {
+        ret->bias[i] = bias;
+    }
     return ret;
 }
 
-inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
-                                  float_t *pweight, float_t bias, float_t pout)
+inline  void fully_connected_update(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
+                                    float_t *pweight, float_t bias, float_t *pout)
 {
     assert(pdata != NULL);
+    assert(pweight != NULL);
     float_t (*pd)[data_rows][data_cols] =
         (float_t(*)[data_rows][data_cols])pdata;
-
 
     float_t tmp = 0.f;
     uint32_t step = 0;
@@ -271,14 +275,15 @@ inline  void fully_connected_data(float_t *pdata, uint32_t data_rows, uint32_t d
         for(uint32_t i = 0; i < data_rows; i++) {
             for(uint32_t j = 0; j < data_cols; j++) {
                 tmp += (*pd)[i][j] * pweight[step];
+                step++;
             }
         }
-        pout = Relu_def(tmp + bias);
-        tmp = 0.f;
-        pd++;
-        step++;
     }
-
+    *pout = tan(tmp + bias);
+    /**pout = Relu_def(tmp + bias);*/
+    /**pout = sigmoid(tmp + bias);*/
+    /**pout = 777.7f;*/
+    /*printf("step:%d\tpout:%8.4f\n", step,*pout);*/
 }
 
 
@@ -286,13 +291,13 @@ inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_
                                      uint32_t data_batch, struct fc_layer *pfc_layer)
 {
     assert(pdata != NULL);
-    for(uint32_t j = 0; j < pfc_layer->neunum; j++) {
-        for(uint32_t i = 0; i < pfc_layer->epoch; i++) {
-            /*fully_connected_data(pdata, data_rows, data_cols, data_batch,*/
-            /*pfc_layer->weight + i * data_batch, pfc_layer->bias, pfc_layer->neu + i * data_batch);*/
-            fully_connected_data(pdata, data_rows, data_cols, data_batch,
-                                 pfc_layer->weight + i * data_batch, pfc_layer->bias, *(pfc_layer->neu + j));
-        }
+    /*printf("neunum:%d\n", pfc_layer->neunum);*/
+    /*printf("rows:%d\n", data_rows);*/
+    /*printf("cols:%d\n", data_cols);*/
+    /*printf("data_batch:%d\n", data_batch);*/
+    for(uint32_t i = 0; i < pfc_layer->neunum; i++) {
+        fully_connected_update(pdata, data_rows, data_cols, data_batch,
+                               &pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu] , pfc_layer->bias[i], &pfc_layer->neu[i]);
     }
 }
 
@@ -324,36 +329,42 @@ struct output_layer* create_output_layer(const char*pstr, uint32_t classnum)
     return ret;
 }
 
-inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label, uint32_t len)
+inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label, uint32_t len,
+                          float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch)
 {
     assert(pfc_layer != NULL);
     assert(pout_layer != NULL);
 
-    float_t labelarray[10] = {0};
-    labelarray[label ] = 1.f;
-    float_t  sumlabel = 0.f;
-    for(uint32_t i = 0; i < 10; i++) {
-        sumlabel += labelarray[label];
-    }
 
-    for(uint32_t loop = 0; loop < pfc_layer->epoch; loop++) {
-        pout_layer->input[loop] = 0.f;
-        float_t tmp = 0.f;
+    for(int loop = 0; loop < 1; loop++) {
+        float_t diff = 0.f;
+        softMax_cross_entropy_with_logits(label, pfc_layer->neu, pfc_layer->neunum, &diff);
+        printf("loop:%d\tdiff:%8.4f\n", loop, diff);
+        /*for(int i = 0; i < 10; i++) {*/
+        /*printf("input:%8.4f\n", pout_layer->input[i]);*/
+        /*}*/
+        /*float theta = 0.01;*/
+        /*for(int i = 0; i < pfc_layer->neunum; i++) {*/
+        /*for(int j = 0; j < pfc_layer->weightsize_ofoneneu; j++) {*/
+        /*float w = pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu + j];*/
+        /*pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu + j] = w - theta * (diff / w);*/
+        /*[>printf("i:%d  j:%d\tw:%8.3f\tdw:%8.3f\tout:%8.6f\n",i,j,w,diff/w,pfc_layer->weight[i*pfc_layer->weightsize_ofoneneu+j]);<]*/
+        /*}*/
+        /*[>printf("weight:%8.6f\n",pfc_layer->weight[0]);<]*/
+        /*pfc_layer->bias[i] = pfc_layer->bias[i]  - theta * (diff / pfc_layer->bias[i] );*/
+        /*[>fully_connected_update(pdata, data_rows, data_cols, data_batch,<]*/
+        /*[>&pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu], pfc_layer->bias[i], &pfc_layer->neu[i]);<]*/
+        /*[>printf("neu:%8.6f\n", pfc_layer->neu[i]);<]*/
+        /*}*/
 
         for(uint32_t i = 0; i < pfc_layer->neunum; i++) {
-            tmp += pfc_layer->neu[i + loop * pfc_layer->epoch] * pfc_layer->weight[i + loop * pfc_layer->neunum];
+            fully_connected_update(pdata, data_rows, data_cols, data_batch,
+                                   &pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu] , pfc_layer->bias[i], &pfc_layer->neu[i]);
         }
-        pout_layer->input[loop] = Relu_def(tmp + pfc_layer->bias);
     }
-    /*MinMax_log(pout_layer->input, 1, pfc_layer->epoch);*/
 
-    float_t diff = 0.f;
-    softMax_cross_entropy_with_logits(label, pout_layer->input, pfc_layer->epoch, &diff);
-    printf("diff:%8.4f\n", diff);
-    for(int i=0;i<10;i++){
-        printf("inout:%8.4f\n",pout_layer->input[i]);
-    }
-    //SGD moment
+    /*printf("-----------------------------\n");*/
+//SGD moment
     /*pout_layer->output;*/
 }
 
@@ -397,6 +408,9 @@ void destory_layer(union store_layer * player)
         }
         if(player->pfc_layer->weight) {
             free(player->pfc_layer->weight);
+        }
+        if(player->pfc_layer->bias) {
+            free(player->pfc_layer->bias);
         }
         free(player->pfc_layer);
     }

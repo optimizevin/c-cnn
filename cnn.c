@@ -261,7 +261,7 @@ struct fc_layer* create_fully_connected_layer(const char*pstr, uint32_t neunum, 
     return ret;
 }
 
-inline  void fully_connected_update(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
+inline  void fully_connected_updata(float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch,
                                     float_t *pweight, float_t bias, float_t *pout)
 {
     assert(pdata != NULL);
@@ -296,7 +296,8 @@ inline  void fully_connected_fclayer(float_t *pdata, uint32_t data_rows, uint32_
     /*printf("cols:%d\n", data_cols);*/
     /*printf("data_batch:%d\n", data_batch);*/
     for(uint32_t i = 0; i < pfc_layer->neunum; i++) {
-        fully_connected_update(pdata, data_rows, data_cols, data_batch,
+        /*printf("fc bias:%8.8f\n", pfc_layer->bias[i]);*/
+        fully_connected_updata(pdata, data_rows, data_cols, data_batch,
                                &pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu] , pfc_layer->bias[i], &pfc_layer->neu[i]);
     }
 }
@@ -336,32 +337,82 @@ inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_
     assert(pout_layer != NULL);
 
 
-    for(int loop = 0; loop < 1; loop++) {
-        float_t diff = 0.f;
-        softMax_cross_entropy_with_logits(label, pfc_layer->neu, pfc_layer->neunum, &diff);
-        printf("loop:%d\tdiff:%8.4f\n", loop, diff);
-        /*for(int i = 0; i < 10; i++) {*/
-        /*printf("input:%8.4f\n", pout_layer->input[i]);*/
-        /*}*/
-        /*float theta = 0.01;*/
+    float_t derivative[len] ;
+    for(int loop = 0; loop < 500; loop++) {
+        memset(derivative, 0x0, len);
+        softMax_cross_entropy_with_logits(label, pfc_layer->neu, pfc_layer->neunum, &derivative[label]);
+        float_t err = sigmoid(derivative[label] - 1);
+
+        printf("loop:%d\tcost:%8.3f\terr:%8.3f\n", loop, derivative[label], sigmoid(derivative[label] - 1));
+        /*printf("loop:%d\terr:%8.3f\n",loop,sigmoid(derivative[label]-1));*/
+        /*printf("loop:%d\tderivative:%8.4f\n", loop, derivative[label]);*/
+        /*float_t etotal = 0.f;*/
         /*for(int i = 0; i < pfc_layer->neunum; i++) {*/
-        /*for(int j = 0; j < pfc_layer->weightsize_ofoneneu; j++) {*/
-        /*float w = pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu + j];*/
-        /*pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu + j] = w - theta * (diff / w);*/
-        /*[>printf("i:%d  j:%d\tw:%8.3f\tdw:%8.3f\tout:%8.6f\n",i,j,w,diff/w,pfc_layer->weight[i*pfc_layer->weightsize_ofoneneu+j]);<]*/
+        /*etotal +=*/
         /*}*/
-        /*[>printf("weight:%8.6f\n",pfc_layer->weight[0]);<]*/
-        /*pfc_layer->bias[i] = pfc_layer->bias[i]  - theta * (diff / pfc_layer->bias[i] );*/
-        /*[>fully_connected_update(pdata, data_rows, data_cols, data_batch,<]*/
-        /*[>&pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu], pfc_layer->bias[i], &pfc_layer->neu[i]);<]*/
-        /*[>printf("neu:%8.6f\n", pfc_layer->neu[i]);<]*/
-        /*}*/
+        float theta = 0.05;
+        for(int i = 0; i < pfc_layer->neunum; i++) {
+            for(int j = 0; j < pfc_layer->weightsize_ofoneneu; j++) {
+                float w = pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu + j];
+                w = pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu + j];
+                w -= theta * err * derivative[label];
+                pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu + j] = w;
+                /*printf("%4dw:%8.8f\n",j,w);*/
+                /*printf("i:%d  j:%d\tw:%8.3f\tdw:%8.3f\tout:%8.6f\n",i,j,w,diff/w,pfc_layer->weight[i*pfc_layer->weightsize_ofoneneu+j]);*/
+            }
+            /*printf("weight:%8.6f\n",pfc_layer->weight[0]);*/
+            /*printf("%4d bias:%8.6f\n",i,pfc_layer->bias[i]);*/
+            /*pfc_layer->bias[i] = pfc_layer->bias[i]  - theta * (derivative[i] / pfc_layer->bias[i] );*/
+            /*float_t b = pfc_layer->bias[i];*/
+            /*[>printf("loop:%d\tbias:%8.4f\t pfc:%8.4f\tdiff:%8.4f\n",i,b,pfc_layer->bias[i],derivative);<]*/
+            /*b = pfc_layer->bias[i]  - theta * (derivative[i] / pfc_layer->bias[i]) ;*/
+            /*if(isnan(b)) {*/
+            /*printf("theta:%8.8f\tdiff:%8.8f\n", theta, derivative[i]);*/
+            /*}*/
+        }
 
         for(uint32_t i = 0; i < pfc_layer->neunum; i++) {
-            fully_connected_update(pdata, data_rows, data_cols, data_batch,
+            fully_connected_updata(pdata, data_rows, data_cols, data_batch,
                                    &pfc_layer->weight[i * pfc_layer->weightsize_ofoneneu] , pfc_layer->bias[i], &pfc_layer->neu[i]);
         }
     }
+
+    /*printf("-----------------------------\n");*/
+//SGD moment
+    /*pout_layer->output;*/
+}
+
+
+inline void output_epoch_bias( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label, uint32_t len,
+                               float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch)
+{
+    assert(pfc_layer != NULL);
+    assert(pout_layer != NULL);
+
+    float d[] = {1.f, 2.f, 3.f};
+    /*softMax_diff(d,3);*/
+
+    float theta = 0.05;
+    for(int loop = 0; loop < 10; loop++) {
+        /*softMax(d, 3);*/
+    softMax_diff(d,3);
+        for(int i = 0; i < 3; i++) {
+            printf("d:%0.3f\n", d[i]);
+        }
+        printf("-----------------------\n");
+        /*float_t gard = 2 * pfc_layer->bias[0] -2;*/
+        /*pfc_layer->bias[0] -= gard * theta;*/
+
+        /*printf("loop:%d\tgard:%8.3f\tbias: %8.3f\n",loop,gard,pfc_layer->bias[0]);*/
+    }
+
+    /*float theta = 0.05;*/
+    /*for(int loop = 0; loop < 50; loop++) {*/
+    /*float_t gard = 2 * pfc_layer->bias[0] -2;*/
+    /*pfc_layer->bias[0] -= gard * theta;*/
+
+    /*printf("loop:%d\tgard:%8.3f\tbias: %8.3f\n",loop,gard,pfc_layer->bias[0]);*/
+    /*}*/
 
     /*printf("-----------------------------\n");*/
 //SGD moment

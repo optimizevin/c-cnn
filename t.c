@@ -203,7 +203,7 @@ void initNet()
     P[2].ppool_layer = create_poollayer("pool", 5, 5);
     P[3].pconv_layer = create_convlayer("conv2", 3, 3, FILTER_CORE_BATCH, BIAS, 0.8);
     P[4].ppool_layer = create_poollayer("pool2", 2, 2);
-    P[5].pfc_layer = create_fully_connected_layer("fully connection 1/2", 10, 4 * 4 * 64,FLT_MIN); 
+    P[5].pfc_layer = create_fully_connected_layer("fully connection 1/2", 10, 4 * 4 * 64,0.5); 
     P[6].poutput_layer = create_output_layer("output layer", CLASS_LOOP);
     /*P[6].pdrop_layer = create_dropout_layer("dropout layer 2", 1, 1, 64);*/
     /*P[7].pfc_layer = create_fully_connected_layer("fully connection 2/2", 64, CLASS_LOOP, 0.5f);*/
@@ -299,11 +299,16 @@ void initNet()
 
         /*output_epoch(P[7].pfc_layer, P[8].poutput_layer, P[0].pinput_layer->label,10);*/
         /*output_epoch(P[5].pfc_layer, P[6].poutput_layer, P[0].pinput_layer->label, 10);*/
-        output_epoch(P[5].pfc_layer, P[6].poutput_layer, P[0].pinput_layer->label, 10,
+        output_epoch_bias(P[5].pfc_layer, P[6].poutput_layer, P[0].pinput_layer->label, 10,
          P[4].ppool_layer->pool_out,
                                  P[4].ppool_layer->out_rows,
                                  P[4].ppool_layer->out_cols,
                                  P[4].ppool_layer->out_batch);
+        /*output_epoch(P[5].pfc_layer, P[6].poutput_layer, P[0].pinput_layer->label, 10,*/
+         /*P[4].ppool_layer->pool_out,*/
+                                 /*P[4].ppool_layer->out_rows,*/
+                                 /*P[4].ppool_layer->out_cols,*/
+                                 /*P[4].ppool_layer->out_batch);*/
 
         /*for(uint32_t loop = 0; loop < 10; loop++) {*/
         /*printf("input:%4.3f\n", P[8].poutput_layer->input[loop]);*/

@@ -185,7 +185,7 @@ inline void dropout(const float_t *src, const uint32_t len, float_t keep_prob, f
 {
     for(int i = 0; i < len; i++) {
         float_t tmp = (rand() / ((float_t)RAND_MAX)) ;
-        (tmp > (1 - keep_prob)) ? (out[i] = src[i]) : (out[i] = 0);
+        out[i] = (tmp > (1 - keep_prob)) ? src[i] : 0;
     }
 
 }
@@ -304,16 +304,16 @@ inline float_t softMax_diff(float_t *src, uint32_t pos)
 
 inline void softMax(float_t *src, uint32_t size)
 {
-    float_t mf = FLT_MIN;
+    float_t maxf = FLT_MIN;
     float_t sm = 0.f;
     for(uint32_t i = 0; i < size; i++) {
-        mf = mf < src[i] ? src[i] : mf;
+        maxf = maxf < src[i] ? src[i] : maxf;
     }
     for(uint32_t i = 0; i < size; i++) {
-        sm += exp(src[i] - mf);
+        sm += exp(src[i] - maxf);
     }
     for(uint32_t i = 0; i < size; i++) {
-        src[i] = exp(src[i] - mf) / sm;
+        src[i] = exp(src[i] - maxf) / sm;
     }
 }
 
@@ -331,20 +331,34 @@ inline void softMax_cross(float_t *src, uint32_t rows, uint32_t cols)
 ************************************************/
 inline void softMax_cross_entropy_with_logits(const uint32_t labels, float_t *logits, const uint32_t blen, float_t *pOut)
 {
-
-    softMax_cross(logits, 1, blen);
+    float_t  tmp[blen];
+    memcpy(tmp, logits, sizeof(float_t)*blen);
+    /*for(int i=0;i<blen;i++){*/
+        /*printf("tm:%8.6f\n",tmp[i]);*/
+    /*}*/
+        /*printf("==============");*/
+    softMax_cross(tmp, 1, blen);
+    /*for(int i=0;i<blen;i++){*/
+        /*printf("sm:%8.6f\n",tmp[i]);*/
+    /*}*/
+        /*printf("------------------");*/
+#define SOFTMAX_MIN 0.00000001
+    
+    /*printf("tmp:%8.8f\n", tmp[labels]);*/
+    tmp[labels] = tmp[labels] < SOFTMAX_MIN ? SOFTMAX_MIN : tmp[labels];
     // mulitple class
-    /*float_t ulab[3] = {0};*/
+    /*float_t ulab[10] = {0};*/
     /*ulab[labels] = 1.f;*/
     /*float_t tmp = 0.f;*/
     /*for(int i = 0; i < 3; i++) {*/
     /*tmp += ulab[i]*log(logits[i]);*/
     /*}*/
     /**pOut = -tmp;*/
-    /*printf("tmp:%8.8f\n",-tmp);*/
+    /*printf("tmp:%8.8f\n", tmp[labels]);*/
 
     //single class
-    *pOut = -log(logits[labels]);
+    *pOut = -log(tmp[labels]);
+    /*printf("out:%8.8f\n", *pOut);*/
 }
 
 

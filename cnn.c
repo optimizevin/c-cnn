@@ -383,29 +383,130 @@ inline void output_epoch( struct fc_layer *pfc_layer, struct output_layer *pout_
 }
 
 
+/*def SGD(self, training_data, epochs, mini_batch_size, eta, test_data=None):*/
+/*if test_data:*/
+/*n_test = len(test_data)#有多少个测试集*/
+/*n = len(training_data)*/
+/*for j in xrange(epochs):*/
+/*random.shuffle(training_data)*/
+/*mini_batches = [*/
+/*training_data[k:k+mini_batch_size] */
+/*for k in xrange(0,n,mini_batch_size)]*/
+/*for mini_batch in mini_batches:*/
+/*self.update_mini_batch(mini_batch, eta)*/
+/*if test_data:*/
+/*print "Epoch {0}: {1}/{2}".format(j, self.evaluate(test_data),n_test)*/
+/*else:*/
+/*print "Epoch {0} complete".format(j)    */
+
+/*def update_mini_batch(self, mini_batch,eta): */
+/*nabla_b = [np.zeros(b.shape) for b in self.biases]*/
+/*nabla_w = [np.zeros(w.shape) for w in self.weights]*/
+/*for x,y in mini_batch:*/
+/*delta_nabla_b, delta_nable_w = self.backprop(x,y)#目标函数对b和w的偏导数*/
+/*nabla_b = [nb+dnb for nb,dnb in zip(nabla_b,delta_nabla_b)]*/
+/*nabla_w = [nw+dnw for nw,dnw in zip(nabla_w,delta_nabla_w)]#累加b和w*/
+/*#最终更新权重为*/
+/*self.weights = [w-(eta/len(mini_batch))*nw for w, nw in zip(self.weights, nabla_w)]*/
+/*self.baises = [b-(eta/len(mini_batch))*nb for b, nb in zip(self.baises, nabla_b)]*/
+
+
+
 inline void output_epoch_bias( struct fc_layer *pfc_layer, struct output_layer *pout_layer, uint32_t label, uint32_t len,
                                float_t *pdata, uint32_t data_rows, uint32_t data_cols, uint32_t data_batch)
 {
+    /*
+    float theta = 0.25;
+    float  x = 5.f;
+    for(int loop = 0; loop < 10; loop++) {
+        float grad = 2 * x - 2;
+        x -= grad * theta;
+        printf("loop:%d\tgard:%8.3f\tx:%8.3f\n", loop, grad, x);
+        if (fabs(grad) < 1e-6)
+            break;
+    }
+    return;
+    //*/
+    /*
+    w = [2,-3,-3] # 我们随机给定一组权重
+    x = [-1, -2]
+    
+    # 前向传播
+    dot = w[0]*x[0] + w[1]*x[1] + w[2]
+    f = 1.0 / (1 + math.exp(-dot)) # sigmoid函数
+    
+    # 反向传播经过该sigmoid神经元
+    ddot = (1 - f) * f # sigmoid函数偏导
+    dx = [w[0] * ddot, w[1] * ddot] # 在x这条路径上的反向传播
+    dw = [x[0] * ddot, x[1] * ddot, 1.0 * ddot] # 在w这条路径上的反向传播
+    # yes！
+    //*/
+
     assert(pfc_layer != NULL);
     assert(pout_layer != NULL);
 
-    float d[] = {1.f, 2.f, 3.f};
-    /*softMax_diff(d,3);*/
+    float rate = 0.01f;
+    float d[] = {10.f, 20.f, 30.f};
+    float y[] = {0.f, 0.f, 1.f};
+    float w[] = {0.8f, 0.6f, 0.4f};
+    float dd[3] = {0.f};
+    float neu[3] = {0};
+    memcpy(dd, d, sizeof(float) * 3);
 
-    float theta = 0.05;
-    for(int loop = 0; loop < 10; loop++) {
-        /*softMax(d, 3);*/
-    softMax_diff(d,3);
-        for(int i = 0; i < 3; i++) {
-            printf("d:%0.3f\n", d[i]);
+    float out = 0.f;
+    float bias[3] = {10.f, 10.f, 10.f};
+    /*softMax_cross_entropy_with_logits(2, d, 3, &out);*/
+    /*printf("out: %4.3f\n", out);*/
+
+    for(int loop = 0; loop < 30; loop++) {
+        printf("dd1:%4.3f\tdd2:%4.3f\tdd3:%4.3f\n",dd[0],dd[1],dd[2]);
+        softMax(dd, 3);
+        w[0] = w[0] - rate * (dd[0] - y[0]) * d[0];
+        w[1] = w[1] - rate * (dd[1] - y[1]) * d[1];
+        w[2] = w[2] - rate * (dd[2] - y[2]) * d[2];
+        bias[0] = bias[0] - rate * (0);
+        bias[1] = bias[1] - rate * (0);
+        bias[2] = bias[2] - rate * (1);
+        /*printf("w1:%4.3f\tw2:%4.3f\tw3:%4.3f\n", w[0],w[1],w[2]);*/
+        /*printf("bias1:%4.3f\tbias2:%4.3f\tbias3:%4.3f\n", bias[0],bias[1],bias[2]);*/
+
+        for(int j = 0; j < 3; j++) {
+            for(int i = 0; i < 3; i++) {
+                neu[j] = tan(w[i] * d[i] + bias[i]);
+            }
+            /*printf("neu[%d]:%4.3f\t",j,neu[j]);*/
         }
-        printf("-----------------------\n");
-        /*float_t gard = 2 * pfc_layer->bias[0] -2;*/
-        /*pfc_layer->bias[0] -= gard * theta;*/
+        /*printf("\n");*/
+        float neutmp[3]={0};
+        memcpy(&neutmp,neu,sizeof(float)*3);
+        float tmp = 0.f;
+        softMax_cross_entropy_with_logits(2, neutmp, 3, &tmp);
+        /*printf("tmp:%4.3f\n",tmp);*/
 
-        /*printf("loop:%d\tgard:%8.3f\tbias: %8.3f\n",loop,gard,pfc_layer->bias[0]);*/
+
+        /*softMax_cross_entropy_with_logits(2, d, 3, &tmp);*/
+        /*printf("out: %4.3f\tbias:%4.3f\td1:%4.3f\td2:%4.3f\td3:%4.3f\n", out, bias, d[0], d[1], d[2]);*/
+        /*if(fabs(out - tmp) < 1e-6) {*/
+        /*printf("break\n");*/
+        /*break;*/
+        /*}*/
+        /*out = tmp;*/
     }
 
+
+    /*float theta = 0.05;*/
+    /*for(int loop = 0; loop < 10; loop++) {*/
+    /*[>softMax(d, 3);<]*/
+    /*softMax_diff(d, 3);*/
+    /*for(int i = 0; i < 3; i++) {*/
+    /*printf("d:%0.3f\n", d[i]);*/
+    /*}*/
+    /*printf("-----------------------\n");*/
+    /*[>float_t gard = 2 * pfc_layer->bias[0] -2;<]*/
+    /*[>pfc_layer->bias[0] -= gard * theta;<]*/
+
+    /*[>printf("loop:%d\tgard:%8.3f\tbias: %8.3f\n",loop,gard,pfc_layer->bias[0]);<]*/
+    /*}*/
     /*float theta = 0.05;*/
     /*for(int loop = 0; loop < 50; loop++) {*/
     /*float_t gard = 2 * pfc_layer->bias[0] -2;*/

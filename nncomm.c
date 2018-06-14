@@ -216,6 +216,8 @@ inline void intMatrixMutiply(const uint32_t *a, const uint32_t *b, uint32_t *c, 
     }
 }
 
+
+//Hadamard mutiply
 inline void float_tMatrixMutiply(const float_t *a, const float_t *b, float_t *c, uint32_t arow, uint32_t acol, uint32_t bcol)
 {
     for(uint32_t i = 0; i < arow; i++) {
@@ -333,18 +335,9 @@ inline void softMax_cross_entropy_with_logits(const uint32_t labels, float_t *lo
 {
     float_t  tmp[blen];
     memcpy(tmp, logits, sizeof(float_t)*blen);
-    /*for(int i=0;i<blen;i++){*/
-        /*printf("tm:%8.6f\n",tmp[i]);*/
-    /*}*/
-        /*printf("==============");*/
     softMax_cross(tmp, 1, blen);
-    /*for(int i=0;i<blen;i++){*/
-        /*printf("sm:%8.6f\n",tmp[i]);*/
-    /*}*/
-        /*printf("------------------");*/
-#define SOFTMAX_MIN 0.00000001
+#define SOFTMAX_MIN 1e-6
     
-    /*printf("tmp:%8.8f\n", tmp[labels]);*/
     tmp[labels] = tmp[labels] < SOFTMAX_MIN ? SOFTMAX_MIN : tmp[labels];
     // mulitple class
     /*float_t ulab[10] = {0};*/
@@ -365,12 +358,17 @@ inline void softMax_cross_entropy_with_logits(const uint32_t labels, float_t *lo
 /************************************************
   "SGD & momentum
        lr: float_t = 0.01 Learning rate.
-       momentum: float_t =  0.9f
+       momentum: float_t =  0.5f
        decay: float_t = 0. Learning rate decay over each update.
 ************************************************/
 inline void SGD_Momentum(const float_t *W, const uint32_t len, const float_t lr, const float_t momentum,
                          const float_t decay)
 {
+/*for i in range(nb_epochs):  */
+  /*np.random.shuffle(data)  */
+  /*for example in data:  */
+    /*params_grad = evaluate_gradient(loss_function, example, params)  */
+    /*params = params - learning_rate * params_grad  */
     for(uint32_t i = 0; i < len; i++) {
     }
 }

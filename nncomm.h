@@ -77,6 +77,7 @@ inline  float_t* randf(const uint32_t nsize, const float_t stddev);
 
 inline void intMatrixMutiply(const uint32_t *a, const uint32_t *b, uint32_t *c,
         uint32_t arow, uint32_t acol, uint32_t bcol);
+//Hadamard mutiply
 inline void float_tMatrixMutiply(const float_t *a, const float_t *b, float_t *c,
         uint32_t arow, uint32_t acol, uint32_t bcol);
 inline float_t *MatrixAdd(const float_t *a, const float_t *b, uint32_t r, uint32_t c);
